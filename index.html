@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Academia do Benatti</title>
+<meta name="theme-color" content="#0ea5e9" />
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#0b1220;--card:#111a2b;--ink:#e7eef7;--mut:#9fb2c8;--line:#223249;--acc:#38bdf8;--good:#22c55e;--bad:#ef4444}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;color:var(--ink);background:linear-gradient(180deg,#0b1220,#0e1424 120%);}header{position:sticky;top:0;background:rgba(11,18,32,.8);backdrop-filter:blur(8px);border-bottom:1px solid #132036;padding:14px 16px;z-index:5}
+.container{max-width:860px;margin:0 auto;padding:12px}
+.h1{font-weight:800;letter-spacing:.3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 26px rgba(0,0,0,.25);margin:10px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spaced{display:flex;justify-content:space-between;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:#12233a;color:var(--ink);padding:10px 12px;border-radius:12px;font-weight:700}
+.btn.primary{background:linear-gradient(180deg,#1a90d1,#1578ad);border-color:#16638b}
+.btn.ghost{background:transparent}
+.btn.good{background:#0f2a18;border-color:#1e4d2f}
+.btn.bad{background:#2b0e11;border-color:#5d1a21}
+.grid{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+.input{background:#0c1526;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px}
+.kbd{font-family:ui-monospace,Menlo,monospace;border:1px solid var(--line);padding:2px 6px;border-radius:6px;background:#0b1220}
+.progress{height:10px;background:#162236;border-radius:999px;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
+.tabbar{position:sticky;bottom:0;background:rgba(11,18,32,.9);backdrop-filter:blur(8px);border-top:1px solid #1a2638;display:flex;gap:6px;padding:10px;z-index:5}
+.tab{flex:1;background:#102036;border:1px solid var(--line);color:#cfe0f7;padding:10px;border-radius:12px;font-size:13px}
+.tab.active{background:#153250;border-color:#2f547a;color:#fff}
+.list{display:flex;flex-direction:column;gap:8px}
+.small{font-size:12px;color:var(--mut)}
+.title{font-weight:800}
+.num{font-variant-numeric:tabular-nums}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+.modal.open{display:flex}
+.modal .box{background:#0d1626;border:1px solid var(--line);border-radius:16px;max-width:880px;width:92vw;max-height:80vh;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.modal header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #1f2a33}
+.modal .content{background:#0a1220}
+.modal iframe,.modal video{display:block;width:100%;height:56.25vw;max-height:70vh}
+</style>
+</head>
+<body>
+<header class="spaced container">
+  <div class="h1">Academia do Benatti</div>
+  <div id="today" class="small"></div>
+</header>
+<main id="view" class="container"></main>
+<nav class="tabbar">
+  <button class="tab active" data-tab="hoje">Hoje</button>
+  <button class="tab" data-tab="treinos">Treinos</button>
+  <button class="tab" data-tab="biblioteca">Biblioteca</button>
+  <button class="tab" data-tab="medidas">Medidas</button>
+  <button class="tab" data-tab="lembretes">Lembretes</button>
+</nav>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <header><div class="title" id="modalTitle">Demonstração</div><button class="btn" id="closeModal">Fechar</button></header>
+    <div class="content" id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const LS='benatti.gym.v1';
+  const state = load() || seed();
+  ensureToday();
+  render('hoje');
+  initSW();
+
+  function seed(){
+    return {
+      hoje: { date: ymd(new Date()), aguaMl:0, treino:[], notas:'' },
+      settings: { aguaMetaMl:2000, copoMl:250 },
+      lembretes: { perm:false, agua:{on:false, interval:60, win:['08:00','22:00']}, pausa:{on:true, interval:60}, treino:{on:false, days:[1,3,5], time:'18:30'} },
+      biblioteca: [
+        { id:id(), nome:'Leg press', gif:'', video:'', dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
+        { id:id(), nome:'Cadeira extensora', gif:'', video:'', dicas:'Controle na subida e descida; não travar joelhos.' },
+        { id:id(), nome:'Mesa flexora', gif:'', video:'', dicas:'Evite tirar o quadril do banco.' },
+        { id:id(), nome:'Remada baixa', gif:'', video:'', dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
+        { id:id(), nome:'Prancha', gif:'', video:'', dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
+      ],
+      treinos: [
+        { id:id(), nome:'Fase inicial', itens:[ {ex:0, series:2, reps:'12-15'}, {ex:1, series:2, reps:'12-15'}, {ex:2, series:2, reps:'12-15'}, {ex:3, series:2, reps:'12-15'}, {ex:4, series:2, reps:'10-20s'} ] }
+      ],
+      medidas: [ /* {data:'2025-08-30', peso:95, cintura:110, quadril:110, peito:105 } */ ]
+    }
+  }
+
+  function id(){ return Math.random().toString(36).slice(2,9) }
+  function ymd(d){ return d.toISOString().slice(0,10) }
+  function load(){ try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null} }
+  function save(){ localStorage.setItem(LS, JSON.stringify(state)) }
+  function ensureToday(){
+    const t = new Date();
+    document.getElementById('today').textContent = t.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit' });
+    if(!state.hoje || state.hoje.date!==ymd(t)) state.hoje={ date:ymd(t), aguaMl:0, treino:[], notas:'' };
+    save();
+  }
+
+  // NAV
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(b.dataset.tab)})
+
+  function render(tab){
+    const el = document.getElementById('view'); el.innerHTML='';
+    if(tab==='hoje') return viewHoje(el);
+    if(tab==='treinos') return viewTreinos(el);
+    if(tab==='biblioteca') return viewBiblioteca(el);
+    if(tab==='medidas') return viewMedidas(el);
+    if(tab==='lembretes') return viewLembretes(el);
+  }
+
+  // ====== HOJE
+  function viewHoje(el){
+    const pct = Math.min(100, Math.round(100*state.hoje.aguaMl/state.settings.aguaMetaMl));
+    el.appendChild(card('Resumo do dia', `
+      <div class="grid g2">
+        <div>
+          <div class="small">Água</div>
+          <div class="title"><span class="num">${state.hoje.aguaMl}</span> / ${state.settings.aguaMetaMl} ml</div>
+          <div class="progress"><div style="width:${pct}%"></div></div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn primary" id="maisCopo">+1 copo (${state.settings.copoMl}ml)</button>
+            <button class="btn" id="menosCopo">-1 copo</button>
+            <button class="btn ghost" id="zerarAgua">Zerar</button>
+          </div>
+        </div>
+        <div>
+          <div class="small">Treino de hoje</div>
+          ${renderTreinoHoje()}
+        </div>
+      </div>
+    `));
+    Q('#maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl; save(); render('hoje')}
+    Q('#menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl); save(); render('hoje')}
+    Q('#zerarAgua').onclick=()=>{state.hoje.aguaMl=0; save(); render('hoje')}
+
+    el.appendChild(card('Notas', `<textarea id="notas" rows="4" class="input" style="width:100%" placeholder="Como foi o treino? Dores no joelho/costas?">${state.hoje.notas||''}</textarea>
+      <div class="spaced" style="margin-top:8px"><span class="small">Dica: execução perfeita > carga.</span><button class="btn good" id="salvarNotas">Salvar</button></div>`));
+    Q('#salvarNotas').onclick=()=>{state.hoje.notas=Q('#notas').value.trim(); save(); alert('Salvo!')}
+  }
+  function renderTreinoHoje(){
+    const plano = state.treinos[0];
+    const itens = plano.itens.map((it,i)=>{
+      const ex = state.biblioteca[it.ex];
+      const checked = state.hoje.treino.includes(i);
+      return `<label class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:8px">
+        <span><input type="checkbox" ${checked?'checked':''} data-chk="${i}"> ${ex.nome} — ${it.series}×${it.reps}</span>
+        <button class="btn" data-demo="${it.ex}">${ex.gif||ex.video? '▶ Ver' : '＋ Demo'}</button>
+      </label>`
+    }).join('');
+    const html = `<div class="list">${itens}
+      <div class="row"><button class="btn" id="editarTreino">Editar treino</button></div>
+    </div>`;
+    setTimeout(()=>{
+      $$('input[data-chk]').forEach(inp=> inp.onchange=()=>{ const i=+inp.dataset.chk; const at=state.hoje.treino.indexOf(i); if(inp.checked && at==-1) state.hoje.treino.push(i); if(!inp.checked && at!=-1) state.hoje.treino.splice(at,1); save(); });
+      $$('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
+      Q('#editarTreino').onclick=()=> editTreino();
+    });
+    return html;
+  }
+
+  // ====== TREINOS
+  function viewTreinos(el){
+    const t = state.treinos[0];
+    const box = card('Plano de treino', `<div class="list" id="lista">
+      ${t.itens.map((it,i)=>{ const ex=state.biblioteca[it.ex]; return row(`${ex.nome}`, `${it.series}×${it.reps}`)}).join('')}
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" id="addItem">+ Adicionar exercício</button>
+      <button class="btn" id="reordenar">Reordenar</button>
+      <button class="btn" id="limpar">Limpar</button>
+    </div>`);
+    el.appendChild(box);
+    Q('#addItem').onclick=()=> addItemTreino();
+    Q('#reordenar').onclick=()=> reorderTreino();
+    Q('#limpar').onclick=()=>{ if(confirm('Limpar treino?')){ t.itens=[]; save(); render('treinos') } };
+
+    el.appendChild(card('Dicas', `<ul class="small"><li>Evite impacto nesta fase</li><li>Respire e mantenha postura</li><li>Se doer joelho/lombar, reduza carga</li></ul>`));
+  }
+  function addItemTreino(){
+    const idx = +prompt('Número do exercício na biblioteca? (veja na aba Biblioteca)');
+    if(isNaN(idx) || !state.biblioteca[idx]) return alert('Índice inválido');
+    const s = +prompt('Séries?', '2')||2; const r = prompt('Reps/tempo?', '12-15')||'12-15';
+    state.treinos[0].itens.push({ex:idx, series:s, reps:r}); save(); render('treinos');
+  }
+  function reorderTreino(){
+    const t = state.treinos[0];
+    const mapa = t.itens.map((it,i)=>`${i}:${state.biblioteca[it.ex].nome}`).join('\n');
+    const seq = prompt('Nova ordem (ex.: 0,2,1,3...)\n'+mapa);
+    if(!seq) return; const arr = seq.split(',').map(s=>+s.trim()).filter(n=>!isNaN(n));
+    if(arr.length!==t.itens.length) return alert('Quantidade não confere');
+    t.itens = arr.map(i=>t.itens[i]); save(); render('treinos');
+  }
+  function editTreino(){ render('treinos'); alert('Abra a aba Treinos para editar.'); }
+
+  // ====== BIBLIOTECA (com GIF/MP4/YouTube)
+  function viewBiblioteca(el){
+    const list = state.biblioteca.map((ex,i)=>{
+      const hasDemo = ex.gif||ex.video;
+      return `<div class="card">
+        <div class="spaced"><div class="title">#${i} ${ex.nome}</div>
+          <div class="row"><button class="btn" data-demo="${i}">${hasDemo? '▶ Ver demo' : '＋ Adicionar demo'}</button>
+          <button class="btn" data-edit="${i}">Editar</button>
+          <button class="btn bad" data-del="${i}">Excluir</button></div>
+        </div>
+        <div class="small">${ex.dicas||''}</div>
+      </div>`
+    }).join('');
+    const wrap = card('Biblioteca de exercícios', `<div class="row"><button class="btn" id="novoEx">+ Novo exercício</button></div><div>${list}</div>`);
+    el.appendChild(wrap);
+    Q('#novoEx').onclick=()=> novoEx();
+    $$('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
+    $$('button[data-edit]').forEach(b=> b.onclick=()=> editEx(+b.dataset.edit));
+    $$('button[data-del]').forEach(b=> b.onclick=()=> delEx(+b.dataset.del));
+  }
+  function novoEx(){
+    const nome = prompt('Nome do exercício?'); if(!nome) return;
+    const dicas = prompt('Dicas rápidas (opcional)?','');
+    state.biblioteca.push({id:id(),nome, gif:'', video:'', dicas}); save(); render('biblioteca');
+  }
+  function editEx(i){
+    const ex = state.biblioteca[i]; if(!ex) return;
+    const nome = prompt('Nome', ex.nome)||ex.nome;
+    const gif = prompt('URL de GIF/MP4 (opcional). Dica: use gfycat/imgur/drive público.', ex.gif||'')||'';
+    const video = prompt('URL do YouTube (opcional)', ex.video||'')||'';
+    const dicas = prompt('Dicas', ex.dicas||'')||'';
+    Object.assign(ex,{nome,gif,video,dicas}); save(); render('biblioteca');
+  }
+  function delEx(i){ if(confirm('Excluir exercício?')){ state.biblioteca.splice(i,1); save(); render('biblioteca') } }
+  function openDemo(i){
+    const ex = state.biblioteca[i];
+    if(!ex) return;
+    const m = Q('#modal'); Q('#modalTitle').textContent = ex.nome;
+    const url = ex.gif||ex.video;
+    if(!url){ editEx(i); return }
+    const html = buildEmbed(url);
+    Q('#modalContent').innerHTML = html; m.classList.add('open');
+  }
+  Q('#closeModal').onclick=()=> Q('#modal').classList.remove('open');
+  function buildEmbed(url){
+    try{
+      if(/\.(mp4|webm|gif)$/i.test(url)) return `<video src="${url}" autoplay controls loop muted playsinline></video>`;
+      const yt = url.match(/(?:youtu.be\/|v=)([\w-]{6,})/); if(yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}" frameborder="0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>`;
+      return `<iframe src="${url}" frameborder="0"></iframe>`;
+    }catch(e){ return `<div class=\"card\">Não deu para abrir o vídeo. Verifique o link.</div>` }
+  }
+
+  // ====== MEDIDAS + gráfico simples
+  function viewMedidas(el){
+    const box = card('Registrar medidas', `<div class="grid g3">
+      <label>Peso (kg)<input id="m_peso" type="number" step="0.1" class="input"></label>
+      <label>Cintura (cm)<input id="m_cint" type="number" step="0.1" class="input"></label>
+      <label>Quadril (cm)<input id="m_quad" type="number" step="0.1" class="input"></label>
+      <label>Peito (cm)<input id="m_peito" type="number" step="0.1" class="input"></label>
+      <label>Data<input id="m_data" type="date" class="input" value="${ymd(new Date())}"></label>
+      <div class="row"><button class="btn good" id="salvarMed">Salvar</button><button class="btn ghost" id="limparMed">Limpar</button></div>
+    </div>`);
+    el.appendChild(box);
+    Q('#salvarMed').onclick=()=>{
+      const rec = { data:Q('#m_data').value, peso:+Q('#m_peso').value||null, cintura:+Q('#m_cint').value||null, quadril:+Q('#m_quad').value||null, peito:+Q('#m_peito').value||null };
+      state.medidas.push(rec); save(); render('medidas');
+    }
+    Q('#limparMed').onclick=()=>{$$('#m_peso,#m_cint,#m_quad,#m_peito').forEach(i=>i.value='')}
+
+    // tabela
+    const rows = state.medidas.map(r=>`<tr><td>${r.data}</td><td>${fmt(r.peso)}</td><td>${fmt(r.cintura)}</td><td>${fmt(r.quadril)}</td><td>${fmt(r.peito)}</td></tr>`).join('');
+    el.appendChild(card('Histórico', `<div style="overflow:auto"><table class="small" style="width:100%;border-collapse:collapse"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>${rows||'<tr><td colspan=5 class=\'small\'>Sem dados</td></tr>'}</tbody></table></div>`));
+
+    // gráfico peso
+    const g = document.createElement('canvas'); g.width=760; g.height=240; g.style.width='100%';
+    el.appendChild(card('Gráfico de peso (kg)', `<div id="wrapgraf"></div>`));
+    Q('#wrapgraf').appendChild(g);
+    drawLineChart(g, state.medidas.map(m=>m.data), state.medidas.map(m=>m.peso));
+  }
+  function fmt(v){ return (v||v===0)? String(v): '-' }
+  function drawLineChart(canvas, labels, data){
+    const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+    const pad=30; const W=canvas.width, H=canvas.height; const xs=pad, ys=pad, xe=W-pad, ye=H-pad;
+    const min = Math.min(...data.filter(n=>!isNaN(n))); const max = Math.max(...data.filter(n=>!isNaN(n)));
+    if(!isFinite(min)||!isFinite(max)||min===max){ ctx.fillStyle='#789'; ctx.fillText('Adicione registros de peso para ver o gráfico.', pad, H/2); return }
+    // eixos
+    ctx.strokeStyle='#2a3b52'; ctx.beginPath(); ctx.moveTo(xs,ys); ctx.lineTo(xs,ye); ctx.lineTo(xe,ye); ctx.stroke();
+    // escala
+    const n=data.length; const stepX=(xe-xs)/Math.max(1,n-1); const range=max-min; 
+    // linhas
+    ctx.strokeStyle='#38bdf8'; ctx.beginPath();
+    data.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); if(i?ctx.lineTo(x,y):ctx.moveTo(x,y) }); ctx.stroke();
+    // pontos
+    ctx.fillStyle='#22c55e'; data.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); })
+  }
+
+  // ====== LEMBRETES (notificações locais enquanto aberto)
+  function viewLembretes(el){
+    const L = state.lembretes;
+    const box = card('Lembretes', `
+      <div class="row"><button class="btn" id="perm">${L.perm? 'Permissão OK' : 'Ativar notificações'}</button></div>
+      <div class="grid g2">
+        <div class="card"><div class="title">Água</div>
+          <label class="row">Ativo <input type="checkbox" id="aguaOn" ${L.agua.on?'checked':''}></label>
+          <label>Intervalo (min) <input id="aguaInt" type="number" class="input" value="${L.agua.interval}" min="15" step="5"></label>
+          <label>Janela: <input id="aguaIni" type="time" class="input" value="${L.agua.win[0]}"> a <input id="aguaFim" type="time" class="input" value="${L.agua.win[1]}"></label>
+        </div>
+        <div class="card"><div class="title">Pausa (levantar)</div>
+          <label class="row">Ativo <input type="checkbox" id="pausaOn" ${L.pausa.on?'checked':''}></label>
+          <label>Intervalo (min) <input id="pausaInt" type="number" class="input" value="${L.pausa.interval}" min="20" step="5"></label>
+        </div>
+      </div>
+      <div class="card"><div class="title">Treino</div>
+        <label class="row">Ativo <input type="checkbox" id="treinoOn" ${L.treino.on?'checked':''}></label>
+        <label>Hora <input id="treinoHora" type="time" class="input" value="${L.treino.time}"></label>
+        <div class="small">Dias: seg, qua, sex</div>
+      </div>
+      <div class="row"><button class="btn good" id="start">Salvar e iniciar</button><button class="btn ghost" id="stop">Parar</button></div>
+      <p class="small">Obs.: alertas funcionam com o app aberto. Para alertas com a tela bloqueada, publique como PWA + Push (posso te guiar depois).</p>
+    `);
+    el.appendChild(box);
+    Q('#perm').onclick=async()=>{ const p = await Notification.requestPermission(); state.lembretes.perm=(p==='granted'); save(); render('lembretes') };
+    Q('#start').onclick=()=>{ L.agua.on=Q('#aguaOn').checked; L.agua.interval=+Q('#aguaInt').value||60; L.agua.win=[Q('#aguaIni').value,Q('#aguaFim').value]; L.pausa.on=Q('#pausaOn').checked; L.pausa.interval=+Q('#pausaInt').value||60; L.treino.on=Q('#treinoOn').checked; L.treino.time=Q('#treinoHora').value; save(); startReminders(); alert('Lembretes iniciados'); };
+    Q('#stop').onclick=()=>{ stopReminders(); alert('Lembretes parados') };
+  }
+  let timers={agua:null,pausa:null,treino:null};
+  function stopReminders(){ Object.values(timers).forEach(t=>{ if(t) clearInterval(t) }); timers={agua:null,pausa:null,treino:null} }
+  function startReminders(){ stopReminders(); const L=state.lembretes; if(L.agua.on){ timers.agua=setInterval(()=>{ const now=new Date(); if(inWin(now,L.agua.win)){ notify('Hora de beber água','Adicione +1 copo no app.'); } }, Math.max(1,L.agua.interval)*60*1000) } if(L.pausa.on){ timers.pausa=setInterval(()=> notify('Hora de levantar','Caminhe 2 minutos e alongue.'), Math.max(1,L.pausa.interval)*60*1000) } if(L.treino.on){ timers.treino=setInterval(()=>{ const now=new Date(); const [h,m]=state.lembretes.treino.time.split(':').map(Number); if([1,3,5].includes(now.getDay()) && now.getHours()==h && now.getMinutes()==m){ notify('Treino agora','Bora! Vá no seu ritmo.'); } }, 60*1000) } }
+  function inWin(now, win){ const t=now.getHours()*60+now.getMinutes(); const [iH,iM]=win[0].split(':').map(Number), [fH,fM]=win[1].split(':').map(Number); const a=iH*60+iM, b=fH*60+fM; return a<=t && t<=b }
+  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(`${title}\n${body}`) }catch(e){ alert(`${title}\n${body}`) } }
+
+  // helpers
+  function Q(s){return document.querySelector(s)} function $$(s){return Array.from(document.querySelectorAll(s))}
+  function card(title, inner){ const d=document.createElement('section'); d.className='card'; d.innerHTML=`<div class="spaced"><div class="title">${title}</div></div>`+inner; return d }
+  function row(l,r){ const d=document.createElement('div'); d.className='spaced'; d.innerHTML=`<div>${l}</div><div class="small">${r}</div>`; return d }
+
+  // PWA (instalável)
+  async function initSW(){ if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js') }catch(e){ console.log('SW', e) } } }
+})();
+</script>
+
+<!-- ======= ARQUIVOS EXTRAS (crie estes ao publicar) =======
+1) Salve como sw.js no mesmo diretório:
+self.addEventListener('install', e=>{ self.skipWaiting(); e.waitUntil(caches.open('benatti-gym-v1').then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']))) });
+self.addEventListener('activate', e=> self.clients.claim());
+self.addEventListener('fetch', e=>{ e.respondWith(caches.match(e.request).then(r=> r || fetch(e.request))) });
+
+2) Salve como manifest.webmanifest no mesmo diretório:
+{
+  "name": "Academia do Benatti",
+  "short_name": "Benatti Gym",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0ea5e9",
+  "icons": []
+}
+-->
+</body>
+</html>
