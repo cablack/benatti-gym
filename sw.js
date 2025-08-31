@@ -1,5 +1,4 @@
-// aumente o número sempre que publicar algo novo
-const CACHE = 'benatti-gym-v10';
+const CACHE = 'benatti-gym-v11';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
