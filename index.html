@@ -1,3 +1,7 @@
+# Create an updated index.html that auto-fills the Biblioteca with the user's media files
+from textwrap import dedent
+
+index_with_videos = dedent("""\
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -65,6 +69,8 @@
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
+  // Preenche demos automaticamente se estiverem vazios (migração suave)
+  migrateMedia();
   render('hoje');
   initSW();
 
@@ -74,17 +80,36 @@
       settings: { aguaMetaMl:2000, copoMl:250 },
       lembretes: { perm:false, agua:{on:false, interval:60, win:['08:00','22:00']}, pausa:{on:true, interval:60}, treino:{on:false, days:[1,3,5], time:'18:30'} },
       biblioteca: [
-        { id:id(), nome:'Leg press', gif:'', video:'', dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
-        { id:id(), nome:'Cadeira extensora', gif:'', video:'', dicas:'Controle na subida e descida; não travar joelhos.' },
-        { id:id(), nome:'Mesa flexora', gif:'', video:'', dicas:'Evite tirar o quadril do banco.' },
-        { id:id(), nome:'Remada baixa', gif:'', video:'', dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
-        { id:id(), nome:'Prancha', gif:'', video:'', dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
+        { id:id(), nome:'Leg press', gif:'', video:'media/leg%20press.mp4', dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
+        { id:id(), nome:'Cadeira extensora', gif:'', video:'media/cadeira-extensora.mp4', dicas:'Controle na subida e descida; não travar joelhos.' },
+        { id:id(), nome:'Mesa flexora', gif:'', video:'media/mesa-flexora.mp4', dicas:'Evite tirar o quadril do banco.' },
+        { id:id(), nome:'Remada baixa', gif:'', video:'media/remada-baixa.mp4', dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
+        { id:id(), nome:'Prancha', gif:'', video:'media/prancha.mp4', dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
       ],
       treinos: [
         { id:id(), nome:'Fase inicial', itens:[ {ex:0, series:2, reps:'12-15'}, {ex:1, series:2, reps:'12-15'}, {ex:2, series:2, reps:'12-15'}, {ex:3, series:2, reps:'12-15'}, {ex:4, series:2, reps:'10-20s'} ] }
       ],
       medidas: [ ]
     }
+  }
+
+  // Mapeia as mídias padrão (caso existam exercícios no storage sem links)
+  const DEFAULT_MEDIA = {
+    'Leg press': 'media/leg%20press.mp4',
+    'Cadeira extensora': 'media/cadeira-extensora.mp4',
+    'Mesa flexora': 'media/mesa-flexora.mp4',
+    'Remada baixa': 'media/remada-baixa.mp4',
+    'Prancha': 'media/prancha.mp4'
+  };
+  function migrateMedia(){
+    let changed=false;
+    if(Array.isArray(state.biblioteca)){
+      state.biblioteca.forEach(ex=>{
+        const u = DEFAULT_MEDIA[ex.nome];
+        if(u && !ex.video && !ex.gif){ ex.video = u; changed=true; }
+      });
+    }
+    if(changed) save();
   }
 
   function id(){ return Math.random().toString(36).slice(2,9) }
@@ -192,8 +217,8 @@
   }
   function reorderTreino(){
     const t = state.treinos[0];
-    const mapa = t.itens.map((it,i)=>`${i}:${state.biblioteca[it.ex].nome}`).join('\n');
-    const seq = prompt('Nova ordem (ex.: 0,2,1,3...)\n'+mapa);
+    const mapa = t.itens.map((it,i)=>`${i}:${state.biblioteca[it.ex].nome}`).join('\\n');
+    const seq = prompt('Nova ordem (ex.: 0,2,1,3...)\\n'+mapa);
     if(!seq) return; const arr = seq.split(',').map(s=>+s.trim()).filter(n=>!isNaN(n));
     if(arr.length!==t.itens.length) return alert('Quantidade não confere');
     t.itens = arr.map(i=>t.itens[i]); save(); render('treinos');
@@ -228,8 +253,8 @@
   function editEx(i){
     const ex = state.biblioteca[i]; if(!ex) return;
     const nome = prompt('Nome', ex.nome)||ex.nome;
-    const gif = prompt('URL de GIF/MP4 (opcional). Dica: use gfycat/imgur/drive público.', ex.gif||'')||'';
-    const video = prompt('URL do YouTube (opcional)', ex.video||'')||'';
+    const gif = prompt('URL de GIF/MP4 (opcional). Dica: use arquivos da pasta media/', ex.gif||'')||'';
+    const video = prompt('URL do YouTube/MP4 (opcional)', ex.video||'')||'';
     const dicas = prompt('Dicas', ex.dicas||'')||'';
     Object.assign(ex,{nome,gif,video,dicas}); save(); render('biblioteca');
   }
@@ -246,10 +271,10 @@
   document.querySelector('#closeModal').onclick=()=> document.querySelector('#modal').classList.remove('open');
   function buildEmbed(url){
     try{
-      if(/\.(mp4|webm|gif)$/i.test(url)) return '<video src="'+url+'" autoplay controls loop muted playsinline></video>';
-      const yt = url.match(/(?:youtu.be\/|v=)([\w-]{6,})/); if(yt) return '<iframe src="https://www.youtube.com/embed/'+yt[1]+'" frameborder="0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
-      return '<iframe src="'+url+'" frameborder="0"></iframe>';
-    }catch(e){ return '<div class="card">Não deu para abrir o vídeo. Verifique o link.</div>'; }
+      if(/\\.(mp4|webm|gif)$/i.test(url)) return '<video src=\"'+url+'\" autoplay controls loop muted playsinline></video>';
+      const yt = url.match(/(?:youtu.be\\/|v=)([\\w-]{6,})/); if(yt) return '<iframe src=\"https://www.youtube.com/embed/'+yt[1]+'\" frameborder=\"0\" allow=\"autoplay;encrypted-media;picture-in-picture\" allowfullscreen></iframe>';
+      return '<iframe src=\"'+url+'\" frameborder=\"0\"></iframe>';
+    }catch(e){ return '<div class=\"card\">Não deu para abrir o vídeo. Verifique o link.</div>'; }
   }
 
   // ====== MEDIDAS + gráfico simples
@@ -271,11 +296,11 @@
 
     // tabela
     const rows = state.medidas.map(r=>'<tr><td>'+r.data+'</td><td>'+fmt(r.peso)+'</td><td>'+fmt(r.cintura)+'</td><td>'+fmt(r.quadril)+'</td><td>'+fmt(r.peito)+'</td></tr>').join('');
-    el.appendChild(card('Histórico', '<div style="overflow:auto"><table class="small" style="width:100%;border-collapse:collapse"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>'+ (rows || '<tr><td colspan="5" class="small">Sem dados</td></tr>') +'</tbody></table></div>'));
+    el.appendChild(card('Histórico', '<div style=\"overflow:auto\"><table class=\"small\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>'+ (rows || '<tr><td colspan=\"5\" class=\"small\">Sem dados</td></tr>') +'</tbody></table></div>'));
 
     // gráfico peso
     const g = document.createElement('canvas'); g.width=760; g.height=240; g.style.width='100%';
-    el.appendChild(card('Gráfico de peso (kg)', '<div id="wrapgraf"></div>'));
+    el.appendChild(card('Gráfico de peso (kg)', '<div id=\"wrapgraf\"></div>'));
     document.querySelector('#wrapgraf').appendChild(g);
     drawLineChart(g, state.medidas.map(m=>m.data), state.medidas.map(m=>m.peso));
   }
@@ -328,7 +353,7 @@
   function stopReminders(){ Object.values(timers).forEach(t=>{ if(t) clearInterval(t); }); timers={agua:null,pausa:null,treino:null}; }
   function startReminders(){ stopReminders(); const L=state.lembretes; if(L.agua.on){ timers.agua=setInterval(()=>{ const now=new Date(); if(inWin(now,L.agua.win)){ notify('Hora de beber água','Adicione +1 copo no app.'); } }, Math.max(1,L.agua.interval)*60*1000); } if(L.pausa.on){ timers.pausa=setInterval(()=> notify('Hora de levantar','Caminhe 2 minutos e alongue.'), Math.max(1,L.pausa.interval)*60*1000); } if(L.treino.on){ timers.treino=setInterval(()=>{ const now=new Date(); const [h,m]=state.lembretes.treino.time.split(':').map(Number); if([1,3,5].includes(now.getDay()) && now.getHours()==h && now.getMinutes()==m){ notify('Treino agora','Bora! Vá no seu ritmo.'); } }, 60*1000); } }
   function inWin(now, win){ const t=now.getHours()*60+now.getMinutes(); const [iH,iM]=win[0].split(':').map(Number), [fH,fM]=win[1].split(':').map(Number); const a=iH*60+iM, b=fH*60+fM; return a<=t && t<=b; }
-  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(title + '\n' + body); }catch(e){ alert(title + '\n' + body); } }
+  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(title + '\\n' + body); }catch(e){ alert(title + '\\n' + body); } }
 
   // helpers
   function card(title, inner){ const d=document.createElement('section'); d.className='card'; d.innerHTML='<div class="spaced"><div class="title">'+title+'</div></div>'+inner; return d; }
@@ -339,3 +364,9 @@
 </script>
 </body>
 </html>
+""")
+
+with open('/mnt/data/index-with-videos.html', 'w', encoding='utf-8') as f:
+    f.write(index_with_videos)
+
+'/mnt/data/index-with-videos.html'
