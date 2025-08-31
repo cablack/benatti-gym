@@ -1,4 +1,4 @@
-const CACHE = 'benatti-gym-v17';
+const CACHE = 'benatti-gym-v18';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
