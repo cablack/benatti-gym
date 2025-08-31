@@ -33,6 +33,10 @@
     .modal .box{background:#0d1626;border:1px solid var(--line);border-radius:16px;max-width:880px;width:92vw;max-height:80vh;overflow:hidden}
     .modal header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #1f2a33}
     .modal iframe,.modal video{display:block;width:100%;height:56.25vw;max-height:70vh}
+    .error-msg {color: #f87171; padding: 16px; text-align: center;}
+    .loading {display: flex; justify-content: center; align-items: center; height: 200px;}
+    .loading::after {content: ""; width: 40px; height: 40px; border: 4px solid #3b82f6; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;}
+    @keyframes spin {to {transform: rotate(360deg);}}
   </style>
 </head>
 <body>
@@ -168,12 +172,75 @@
   }
 
   function openDemo(i){
-    const ex=state.biblioteca[i];if(!ex)return;
-    byId('modalTitle').textContent=ex.nome;
-    byId('modalContent').innerHTML='<video src="'+ex.video+'" autoplay controls loop muted playsinline></video>';
+    const ex=state.biblioteca[i];
+    if(!ex) return;
+    
+    byId('modalTitle').textContent = ex.nome;
+    
+    // Adicionar indicador de carregamento
+    byId('modalContent').innerHTML = `
+      <div class="loading"></div>
+      <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
+    `;
+    
     byId('modal').classList.add('open');
+    
+    // Criar elemento de vídeo com melhores atributos
+    const video = document.createElement('video');
+    video.controls = true;
+    video.playsInline = true;
+    video.muted = true; // Necessário para autoplay em dispositivos móveis
+    video.style.width = '100%';
+    video.style.maxHeight = '70vh';
+    
+    const source = document.createElement('source');
+    source.src = ex.video;
+    source.type = 'video/mp4';
+    
+    video.appendChild(source);
+    
+    // Quando o vídeo estiver carregado, substituir o conteúdo
+    video.addEventListener('loadeddata', function() {
+      byId('modalContent').innerHTML = '';
+      byId('modalContent').appendChild(video);
+      
+      // Tentar reproduzir o vídeo
+      video.play().catch(error => {
+        console.log('Autoplay bloqueado:', error);
+        byId('modalContent').innerHTML = `
+          <div class="error-msg">
+            <p>Clique no botão de play para iniciar o vídeo.</p>
+            <p>Se o vídeo não carregar, verifique sua conexão.</p>
+          </div>
+          <video controls playsInline style="width:100%; max-height:70vh;">
+            <source src="${ex.video}" type="video/mp4">
+          </video>
+        `;
+      });
+    });
+    
+    // Tratar erros de carregamento
+    video.addEventListener('error', function() {
+      byId('modalContent').innerHTML = `
+        <div class="error-msg">
+          <p>Erro ao carregar o vídeo.</p>
+          <p>Verifique sua conexão ou tente novamente mais tarde.</p>
+        </div>
+      `;
+    });
+    
+    // Pré-carregar o vídeo
+    video.load();
   }
-  byId('closeModal').onclick=()=>byId('modal').classList.remove('open');
+  
+  byId('closeModal').onclick=()=>{
+    byId('modal').classList.remove('open');
+    // Parar qualquer vídeo que esteja tocando
+    const video = byId('modalContent').querySelector('video');
+    if (video) {
+      video.pause();
+    }
+  };
 
   function card(title,inner){
     const d=document.createElement('section');
