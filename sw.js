@@ -1,5 +1,5 @@
-// Troque a versão SEMPRE que publicar: v7, v8, v9...
-const CACHE = 'benatti-gym-v7';
+// mude o número SEMPRE que publicar uma versão nova
+const CACHE = 'benatti-gym-v8';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -14,7 +14,7 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => self.clients.claim());
 
-// Cache-first para imagens e vídeos depois da primeira visita
+// Cache-first para imagens e vídeos após primeira visita
 self.addEventListener('fetch', (e) => {
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
