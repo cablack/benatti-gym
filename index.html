@@ -1,179 +1,160 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Academia do Benatti</title>
-<meta name="theme-color" content="#0ea5e9" />
-<link rel="manifest" href="manifest.webmanifest">
-<style>
-:root{--bg:#0b1220;--card:#111a2b;--ink:#e7eef7;--mut:#9fb2c8;--line:#223249}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;color:var(--ink);background:linear-gradient(180deg,#0b1220,#0e1424 120%);}header{position:sticky;top:0;background:rgba(11,18,32,.8);backdrop-filter:blur(8px);border-bottom:1px solid #132036;padding:14px 16px;z-index:5}
-.container{max-width:860px;margin:0 auto;padding:12px}
-.h1{font-weight:800;letter-spacing:.3px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 8px 26px rgba(0,0,0,.25);margin:10px 0}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.spaced{display:flex;justify-content:space-between;align-items:center}
-.btn{appearance:none;border:1px solid var(--line);background:#12233a;color:var(--ink);padding:10px 12px;border-radius:12px;font-weight:700}
-.btn.primary{background:linear-gradient(180deg,#1a90d1,#1578ad);border-color:#16638b}
-.btn.ghost{background:transparent}
-.btn.good{background:#0f2a18;border-color:#1e4d2f}
-.btn.bad{background:#2b0e11;border-color:#5d1a21}
-.grid{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
-.input{background:#0c1526;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px}
-.progress{height:10px;background:#162236;border-radius:999px;overflow:hidden}
-.progress>div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
-.tabbar{position:sticky;bottom:0;background:rgba(11,18,32,.9);backdrop-filter:blur(8px);border-top:1px solid #1a2638;display:flex;gap:6px;padding:10px;z-index:5}
-.tab{flex:1;background:#102036;border:1px solid var(--line);color:#cfe0f7;padding:10px;border-radius:12px;font-size:13px}
-.tab.active{background:#153250;border-color:#2f547a;color:#fff}
-.list{display:flex;flex-direction:column;gap:8px}
-.small{font-size:12px;color:#9fb2c8}
-.title{font-weight:800}
-.num{font-variant-numeric:tabular-nums}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
-.modal.open{display:flex}
-.modal .box{background:#0d1626;border:1px solid var(--line);border-radius:16px;max-width:880px;width:92vw;max-height:80vh;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.4)}
-.modal header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #1f2a33}
-.modal .content{background:#0a1220}
-.modal iframe,.modal video{display:block;width:100%;height:56.25vw;max-height:70vh}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Academia do Benatti</title>
+  <meta name="theme-color" content="#0ea5e9" />
+  <style>
+    :root { --bg:#0b1220; --card:#111a2b; --ink:#e7eef7; --mut:#9fb2c8; --line:#223249; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; color:var(--ink); background:#0b1220; }
+    header { position:sticky; top:0; background:#0e1424; border-bottom:1px solid #132036; padding:14px 16px; z-index:5; }
+    .container { max-width:860px; margin:0 auto; padding:16px; }
+    .h1 { font-weight:800; letter-spacing:.3px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:0 8px 26px rgba(0,0,0,.25); margin:12px 0; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .spaced { display:flex; justify-content:space-between; align-items:center; }
+    .btn { appearance:none; border:1px solid var(--line); background:#12233a; color:var(--ink); padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; }
+    .btn.primary { background:linear-gradient(180deg,#1a90d1,#1578ad); border-color:#16638b; }
+    .progress { height:10px; background:#162236; border-radius:999px; overflow:hidden; }
+    .progress > div { height:100%; background:linear-gradient(90deg,#38bdf8,#22c55e); width:0%; }
+    .tabbar { position:sticky; bottom:0; background:#0e1424; border-top:1px solid #1a2638; display:flex; gap:6px; padding:10px; z-index:5; }
+    .tab { flex:1; background:#102036; border:1px solid var(--line); color:#cfe0f7; padding:10px; border-radius:12px; font-size:13px; cursor:pointer; }
+    .tab.active { background:#153250; border-color:#2f547a; color:#fff; }
+    .list { display:flex; flex-direction:column; gap:8px; }
+    .small { font-size:12px; color:var(--mut); }
+    .title { font-weight:800; }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50; }
+    .modal.open { display:flex; }
+    .modal .box { background:#0d1626; border:1px solid var(--line); border-radius:16px; max-width:880px; width:92vw; max-height:80vh; overflow:hidden; }
+    .modal header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #1f2a33; }
+    .modal iframe, .modal video { display:block; width:100%; height:56.25vw; max-height:70vh; }
+  </style>
 </head>
 <body>
-<header class="spaced container">
-  <div class="h1">Academia do Benatti</div>
-  <div id="today" class="small"></div>
-</header>
-<main id="view" class="container"></main>
-<nav class="tabbar">
-  <button class="tab active" data-tab="hoje">Hoje</button>
-  <button class="tab" data-tab="treinos">Treinos</button>
-  <button class="tab" data-tab="biblioteca">Biblioteca</button>
-  <button class="tab" data-tab="medidas">Medidas</button>
-  <button class="tab" data-tab="lembretes">Lembretes</button>
-</nav>
+  <header class="spaced container">
+    <div class="h1">Academia do Benatti</div>
+    <div id="today" class="small"></div>
+  </header>
 
-<div class="modal" id="modal">
-  <div class="box">
-    <header><div class="title" id="modalTitle">Demonstração</div><button class="btn" id="closeModal">Fechar</button></header>
-    <div class="content" id="modalContent"></div>
+  <main id="view" class="container"></main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="hoje">Hoje</button>
+    <button class="tab" data-tab="biblioteca">Biblioteca</button>
+  </nav>
+
+  <div class="modal" id="modal">
+    <div class="box">
+      <header>
+        <div class="title" id="modalTitle">Demonstração</div>
+        <button class="btn" id="closeModal">Fechar</button>
+      </header>
+      <div class="content" id="modalContent"></div>
+    </div>
   </div>
-</div>
 
-<script>
-(function(){
-  // MOSTRAR ERRO NA TELA (se algo quebrar)
-  window.addEventListener('error', e=>{
-    const p=document.createElement('pre');
-    p.textContent='Erro: '+e.message;
-    p.style.cssText='position:fixed;left:8px;bottom:8px;background:#2b0e11;color:#fff;border:1px solid #5d1a21;border-radius:8px;padding:8px;max-width:90vw;z-index:9999';
-    document.body.appendChild(p);
-  });
+  <script>
+  (function(){
+    const LS='benatti.gym.v1';
+    const state = load() || seed();
+    ensureToday();
+    render('hoje');
+    initSW();
 
-  const LS='benatti.gym.v1';
-  const state = load() || seed();
-  ensureToday();
-  migrateMedia();        // completa vídeos por nome
-  render('hoje');
-  initSW();
-
-  function seed(){
-    return {
-      hoje: { date: ymd(new Date()), aguaMl:0, treino:[], notas:'' },
-      settings: { aguaMetaMl:2000, copoMl:250 },
-      lembretes: { perm:false, agua:{on:false, interval:60, win:['08:00','22:00']}, pausa:{on:true, interval:60}, treino:{on:false, days:[1,3,5], time:'18:30'} },
-      biblioteca: [
-        { id:id(), nome:'Leg press',         gif:'', video:'media/leg-press.mp4',         dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
-        { id:id(), nome:'Cadeira extensora', gif:'', video:'media/cadeira-extensora.mp4', dicas:'Controle na subida e descida; não travar joelhos.' },
-        { id:id(), nome:'Mesa flexora',      gif:'', video:'media/mesa-flexora.mp4',      dicas:'Evite tirar o quadril do banco.' },
-        { id:id(), nome:'Remada baixa',      gif:'', video:'media/remada-baixa.mp4',      dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
-        { id:id(), nome:'Prancha',           gif:'', video:'media/prancha.mp4',           dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
-      ],
-      treinos: [
-        { id:id(), nome:'Fase inicial', itens:[ {ex:0, series:2, reps:'12-15'}, {ex:1, series:2, reps:'12-15'}, {ex:2, series:2, reps:'12-15'}, {ex:3, series:2, reps:'12-15'}, {ex:4, series:2, reps:'10-20s'} ] }
-      ],
-      medidas: [ ]
+    function seed(){
+      return {
+        hoje: { date: ymd(new Date()), aguaMl:0, notas:'' },
+        settings: { aguaMetaMl:2000, copoMl:250 },
+        biblioteca: [
+          { id:id(), nome:'Leg press',         video:'media/leg-press.mp4',         dicas:'Joelho alinhado ao pé.' },
+          { id:id(), nome:'Cadeira extensora', video:'media/cadeira-extensora.mp4', dicas:'Controle na subida e descida.' },
+          { id:id(), nome:'Mesa flexora',      video:'media/mesa-flexora.mp4',      dicas:'Não tire o quadril do banco.' },
+          { id:id(), nome:'Remada baixa',      video:'media/remada-baixa.mp4',      dicas:'Peito aberto; puxe pelo cotovelo.' },
+          { id:id(), nome:'Prancha',           video:'media/prancha.mp4',           dicas:'Alinhe cabeça, tronco e quadril.' }
+        ]
+      }
     }
-  }
 
-  // completar vídeos se a biblioteca local tiver sem link
-  const DEFAULT_MEDIA = {
-    'Leg press': 'media/leg-press.mp4',
-    'Cadeira extensora': 'media/cadeira-extensora.mp4',
-    'Mesa flexora': 'media/mesa-flexora.mp4',
-    'Remada baixa': 'media/remada-baixa.mp4',
-    'Prancha': 'media/prancha.mp4'
-  };
-  function migrateMedia(){
-    let changed=false;
-    (state.biblioteca||[]).forEach(ex=>{
-      const u = DEFAULT_MEDIA[ex.nome];
-      if(u && !ex.video && !ex.gif){ ex.video = u; changed=true; }
+    function id(){ return Math.random().toString(36).slice(2,9); }
+    function ymd(d){ return d.toISOString().slice(0,10); }
+    function load(){ try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null} }
+    function save(){ localStorage.setItem(LS, JSON.stringify(state)) }
+    function ensureToday(){
+      const t = new Date();
+      document.getElementById('today').textContent = t.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit' });
+      if(!state.hoje || state.hoje.date!==ymd(t)) state.hoje={ date:ymd(t), aguaMl:0, notas:'' };
+      save();
+    }
+
+    document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); render(b.dataset.tab);
     });
-    if(changed) save();
-  }
 
-  function id(){ return Math.random().toString(36).slice(2,9) }
-  function ymd(d){ return d.toISOString().slice(0,10) }
-  function load(){ try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null} }
-  function save(){ localStorage.setItem(LS, JSON.stringify(state)) }
-  function ensureToday(){
-    const t = new Date();
-    document.getElementById('today').textContent = t.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit' });
-    if(!state.hoje || state.hoje.date!==ymd(t)) state.hoje={ date:ymd(t), aguaMl:0, treino:[], notas:'' };
-    save();
-  }
+    function render(tab){
+      const el = document.getElementById('view'); el.innerHTML='';
+      if(tab==='hoje') return viewHoje(el);
+      if(tab==='biblioteca') return viewBiblioteca(el);
+    }
 
-  // NAV
-  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); render(b.dataset.tab)
-  });
-
-  function render(tab){
-    const el = document.getElementById('view'); el.innerHTML='';
-    if(tab==='hoje') return viewHoje(el);
-    if(tab==='treinos') return viewTreinos(el);
-    if(tab==='biblioteca') return viewBiblioteca(el);
-    if(tab==='medidas') return viewMedidas(el);
-    if(tab==='lembretes') return viewLembretes(el);
-  }
-
-  // ====== HOJE
-  function viewHoje(el){
-    const pct = Math.min(100, Math.round(100*state.hoje.aguaMl/state.settings.aguaMetaMl));
-    el.appendChild(card('Resumo do dia', `
-      <div class="grid g2">
+    function viewHoje(el){
+      const pct = Math.min(100, Math.round(100*state.hoje.aguaMl/state.settings.aguaMetaMl));
+      el.appendChild(card('Resumo do dia', `
         <div>
           <div class="small">Água</div>
-          <div class="title"><span class="num">${state.hoje.aguaMl}</span> / ${state.settings.aguaMetaMl} ml</div>
+          <div class="title"><span>${state.hoje.aguaMl}</span> / ${state.settings.aguaMetaMl} ml</div>
           <div class="progress"><div style="width:${pct}%"></div></div>
           <div class="row" style="margin-top:8px">
             <button class="btn primary" id="maisCopo">+1 copo (${state.settings.copoMl}ml)</button>
             <button class="btn" id="menosCopo">-1 copo</button>
-            <button class="btn ghost" id="zerarAgua">Zerar</button>
+            <button class="btn" id="zerarAgua">Zerar</button>
           </div>
         </div>
-        <div>
-          <div class="small">Treino de hoje</div>
-          ${renderTreinoHoje()}
-        </div>
-      </div>
-    `));
-    document.querySelector('#maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl; save(); render('hoje')};
-    document.querySelector('#menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl); save(); render('hoje')};
-    document.querySelector('#zerarAgua').onclick=()=>{state.hoje.aguaMl=0; save(); render('hoje')};
+      `));
+      byId('maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl; save(); render('hoje');};
+      byId('menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl); save(); render('hoje');};
+      byId('zerarAgua').onclick=()=>{state.hoje.aguaMl=0; save(); render('hoje');};
+    }
 
-    el.appendChild(card('Notas', `<textarea id="notas" rows="4" class="input" style="width:100%" placeholder="Como foi o treino? Dores no joelho/costas?">${state.hoje.notas||''}</textarea>
-      <div class="spaced" style="margin-top:8px"><span class="small">Dica: execução perfeita > carga.</span><button class="btn good" id="salvarNotas">Salvar</button></div>`));
-    document.querySelector('#salvarNotas').onclick=()=>{state.hoje.notas=document.querySelector('#notas').value.trim(); save(); alert('Salvo!')};
-  }
-  function renderTreinoHoje(){
-    const plano = state.treinos[0];
-    const itens = plano.itens.map((it,i)=>{
-      const ex = state.biblioteca[it.ex];
-      const checked = state.hoje.treino.includes(i);
-      return `<label class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:8px">
-        <span><input type="checkbox" ${checked?'checked':''} data-chk="${i}"> ${ex.nome} — ${it.series}×${it.reps}</span>
-        <button class="btn" data-demo="${it.ex}">${ex.gif||ex.video? '▶ Ver' : '＋ Demo'}</button>
-      </label>`;
-    }).j
+    function viewBiblioteca(el){
+      const list = (state.biblioteca||[]).map((ex,i)=>`
+        <div class="card">
+          <div class="spaced">
+            <div class="title">#${i} ${ex.nome}</div>
+            <button class="btn" data-demo="${i}">▶ Ver</button>
+          </div>
+          <div class="small">${ex.dicas||''}</div>
+        </div>
+      `).join('');
+      const wrap = card('Biblioteca de exercícios', `<div>${list}</div>`);
+      el.appendChild(wrap);
+      document.querySelectorAll('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
+    }
+
+    function openDemo(i){
+      const ex = state.biblioteca[i]; if(!ex) return;
+      const m = byId('modal'); byId('modalTitle').textContent = ex.nome;
+      byId('modalContent').innerHTML = '<video src="'+ex.video+'" autoplay controls loop muted playsinline></video>';
+      m.classList.add('open');
+    }
+    byId('closeModal').onclick=()=> byId('modal').classList.remove('open');
+
+    function card(title, inner){
+      const d=document.createElement('section');
+      d.className='card';
+      d.innerHTML='<div class="spaced"><div class="title">'+title+'</div></div>'+inner;
+      return d;
+    }
+    function byId(id){ return document.getElementById(id); }
+
+    async function initSW(){ 
+      if('serviceWorker' in navigator){ 
+        try{ await navigator.serviceWorker.register('sw.js'); }catch(e){ console.log('SW', e); } 
+      } 
+    }
+  })();
+  </script>
+</body>
+</html>
