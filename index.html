@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0ea5e9" />
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--bg:#0b1220;--card:#111a2b;--ink:#e7eef7;--mut:#9fb2c8;--line:#223249;--acc:#38bdf8;--good:#22c55e;--bad:#ef4444}
+:root{--bg:#0b1220;--card:#111a2b;--ink:#e7eef7;--mut:#9fb2c8;--line:#223249}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;color:var(--ink);background:linear-gradient(180deg,#0b1220,#0e1424 120%);}header{position:sticky;top:0;background:rgba(11,18,32,.8);backdrop-filter:blur(8px);border-bottom:1px solid #132036;padding:14px 16px;z-index:5}
 .container{max-width:860px;margin:0 auto;padding:12px}
 .h1{font-weight:800;letter-spacing:.3px}
@@ -83,7 +83,7 @@
       treinos: [
         { id:id(), nome:'Fase inicial', itens:[ {ex:0, series:2, reps:'12-15'}, {ex:1, series:2, reps:'12-15'}, {ex:2, series:2, reps:'12-15'}, {ex:3, series:2, reps:'12-15'}, {ex:4, series:2, reps:'10-20s'} ] }
       ],
-      medidas: [ /* {data:'2025-08-30', peso:95, cintura:110, quadril:110, peito:105 } */ ]
+      medidas: [ ]
     }
   }
 
@@ -131,13 +131,13 @@
         </div>
       </div>
     `));
-    Q('#maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl; save(); render('hoje')}
-    Q('#menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl); save(); render('hoje')}
-    Q('#zerarAgua').onclick=()=>{state.hoje.aguaMl=0; save(); render('hoje')}
+    document.querySelector('#maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl; save(); render('hoje')};
+    document.querySelector('#menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl); save(); render('hoje')};
+    document.querySelector('#zerarAgua').onclick=()=>{state.hoje.aguaMl=0; save(); render('hoje')};
 
     el.appendChild(card('Notas', `<textarea id="notas" rows="4" class="input" style="width:100%" placeholder="Como foi o treino? Dores no joelho/costas?">${state.hoje.notas||''}</textarea>
       <div class="spaced" style="margin-top:8px"><span class="small">Dica: execução perfeita > carga.</span><button class="btn good" id="salvarNotas">Salvar</button></div>`));
-    Q('#salvarNotas').onclick=()=>{state.hoje.notas=Q('#notas').value.trim(); save(); alert('Salvo!')}
+    document.querySelector('#salvarNotas').onclick=()=>{state.hoje.notas=document.querySelector('#notas').value.trim(); save(); alert('Salvo!')};
   }
   function renderTreinoHoje(){
     const plano = state.treinos[0];
@@ -147,15 +147,21 @@
       return `<label class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:8px">
         <span><input type="checkbox" ${checked?'checked':''} data-chk="${i}"> ${ex.nome} — ${it.series}×${it.reps}</span>
         <button class="btn" data-demo="${it.ex}">${ex.gif||ex.video? '▶ Ver' : '＋ Demo'}</button>
-      </label>`
+      </label>`;
     }).join('');
     const html = `<div class="list">${itens}
       <div class="row"><button class="btn" id="editarTreino">Editar treino</button></div>
     </div>`;
     setTimeout(()=>{
-      $$('input[data-chk]').forEach(inp=> inp.onchange=()=>{ const i=+inp.dataset.chk; const at=state.hoje.treino.indexOf(i); if(inp.checked && at==-1) state.hoje.treino.push(i); if(!inp.checked && at!=-1) state.hoje.treino.splice(at,1); save(); });
-      $$('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
-      Q('#editarTreino').onclick=()=> editTreino();
+      document.querySelectorAll('input[data-chk]').forEach(inp=> inp.onchange=()=>{
+        const i=+inp.dataset.chk;
+        const at=state.hoje.treino.indexOf(i);
+        if(inp.checked && at===-1) state.hoje.treino.push(i);
+        if(!inp.checked && at!==-1) state.hoje.treino.splice(at,1);
+        save();
+      });
+      document.querySelectorAll('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
+      document.querySelector('#editarTreino').onclick=()=> editTreino();
     });
     return html;
   }
@@ -164,7 +170,7 @@
   function viewTreinos(el){
     const t = state.treinos[0];
     const box = card('Plano de treino', `<div class="list" id="lista">
-      ${t.itens.map((it,i)=>{ const ex=state.biblioteca[it.ex]; return row(`${ex.nome}`, `${it.series}×${it.reps}`)}).join('')}
+      ${t.itens.map((it)=>{ const ex=state.biblioteca[it.ex]; return row(`${ex.nome}`, `${it.series}×${it.reps}`)}).join('')}
     </div>
     <div class="row" style="margin-top:8px">
       <button class="btn" id="addItem">+ Adicionar exercício</button>
@@ -172,9 +178,9 @@
       <button class="btn" id="limpar">Limpar</button>
     </div>`);
     el.appendChild(box);
-    Q('#addItem').onclick=()=> addItemTreino();
-    Q('#reordenar').onclick=()=> reorderTreino();
-    Q('#limpar').onclick=()=>{ if(confirm('Limpar treino?')){ t.itens=[]; save(); render('treinos') } };
+    document.querySelector('#addItem').onclick=()=> addItemTreino();
+    document.querySelector('#reordenar').onclick=()=> reorderTreino();
+    document.querySelector('#limpar').onclick=()=>{ if(confirm('Limpar treino?')){ t.itens=[]; save(); render('treinos'); } };
 
     el.appendChild(card('Dicas', `<ul class="small"><li>Evite impacto nesta fase</li><li>Respire e mantenha postura</li><li>Se doer joelho/lombar, reduza carga</li></ul>`));
   }
@@ -205,14 +211,14 @@
           <button class="btn bad" data-del="${i}">Excluir</button></div>
         </div>
         <div class="small">${ex.dicas||''}</div>
-      </div>`
+      </div>`;
     }).join('');
     const wrap = card('Biblioteca de exercícios', `<div class="row"><button class="btn" id="novoEx">+ Novo exercício</button></div><div>${list}</div>`);
     el.appendChild(wrap);
-    Q('#novoEx').onclick=()=> novoEx();
-    $$('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
-    $$('button[data-edit]').forEach(b=> b.onclick=()=> editEx(+b.dataset.edit));
-    $$('button[data-del]').forEach(b=> b.onclick=()=> delEx(+b.dataset.del));
+    document.querySelector('#novoEx').onclick=()=> novoEx();
+    document.querySelectorAll('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
+    document.querySelectorAll('button[data-edit]').forEach(b=> b.onclick=()=> editEx(+b.dataset.edit));
+    document.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=> delEx(+b.dataset.del));
   }
   function novoEx(){
     const nome = prompt('Nome do exercício?'); if(!nome) return;
@@ -227,23 +233,23 @@
     const dicas = prompt('Dicas', ex.dicas||'')||'';
     Object.assign(ex,{nome,gif,video,dicas}); save(); render('biblioteca');
   }
-  function delEx(i){ if(confirm('Excluir exercício?')){ state.biblioteca.splice(i,1); save(); render('biblioteca') } }
+  function delEx(i){ if(confirm('Excluir exercício?')){ state.biblioteca.splice(i,1); save(); render('biblioteca'); } }
   function openDemo(i){
     const ex = state.biblioteca[i];
     if(!ex) return;
-    const m = Q('#modal'); Q('#modalTitle').textContent = ex.nome;
+    const m = document.querySelector('#modal'); document.querySelector('#modalTitle').textContent = ex.nome;
     const url = ex.gif||ex.video;
-    if(!url){ editEx(i); return }
+    if(!url){ editEx(i); return; }
     const html = buildEmbed(url);
-    Q('#modalContent').innerHTML = html; m.classList.add('open');
+    document.querySelector('#modalContent').innerHTML = html; m.classList.add('open');
   }
-  Q('#closeModal').onclick=()=> Q('#modal').classList.remove('open');
+  document.querySelector('#closeModal').onclick=()=> document.querySelector('#modal').classList.remove('open');
   function buildEmbed(url){
     try{
-      if(/\.(mp4|webm|gif)$/i.test(url)) return `<video src="${url}" autoplay controls loop muted playsinline></video>`;
-      const yt = url.match(/(?:youtu.be\/|v=)([\w-]{6,})/); if(yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}" frameborder="0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>`;
-      return `<iframe src="${url}" frameborder="0"></iframe>`;
-    }catch(e){ return `<div class=\"card\">Não deu para abrir o vídeo. Verifique o link.</div>` }
+      if(/\.(mp4|webm|gif)$/i.test(url)) return '<video src="'+url+'" autoplay controls loop muted playsinline></video>';
+      const yt = url.match(/(?:youtu.be\/|v=)([\w-]{6,})/); if(yt) return '<iframe src="https://www.youtube.com/embed/'+yt[1]+'" frameborder="0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
+      return '<iframe src="'+url+'" frameborder="0"></iframe>';
+    }catch(e){ return '<div class="card">Não deu para abrir o vídeo. Verifique o link.</div>'; }
   }
 
   // ====== MEDIDAS + gráfico simples
@@ -257,37 +263,36 @@
       <div class="row"><button class="btn good" id="salvarMed">Salvar</button><button class="btn ghost" id="limparMed">Limpar</button></div>
     </div>`);
     el.appendChild(box);
-    Q('#salvarMed').onclick=()=>{
-      const rec = { data:Q('#m_data').value, peso:+Q('#m_peso').value||null, cintura:+Q('#m_cint').value||null, quadril:+Q('#m_quad').value||null, peito:+Q('#m_peito').value||null };
+    document.querySelector('#salvarMed').onclick=()=>{
+      const rec = { data:document.querySelector('#m_data').value, peso:+document.querySelector('#m_peso').value||null, cintura:+document.querySelector('#m_cint').value||null, quadril:+document.querySelector('#m_quad').value||null, peito:+document.querySelector('#m_peito').value||null };
       state.medidas.push(rec); save(); render('medidas');
-    }
-    Q('#limparMed').onclick=()=>{$$('#m_peso,#m_cint,#m_quad,#m_peito').forEach(i=>i.value='')}
+    };
+    document.querySelector('#limparMed').onclick=()=>{['#m_peso','#m_cint','#m_quad','#m_peito'].forEach(sel=>document.querySelector(sel).value='');};
 
     // tabela
-    const rows = state.medidas.map(r=>`<tr><td>${r.data}</td><td>${fmt(r.peso)}</td><td>${fmt(r.cintura)}</td><td>${fmt(r.quadril)}</td><td>${fmt(r.peito)}</td></tr>`).join('');
-    el.appendChild(card('Histórico', `<div style="overflow:auto"><table class="small" style="width:100%;border-collapse:collapse"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>${rows||'<tr><td colspan=5 class=\'small\'>Sem dados</td></tr>'}</tbody></table></div>`));
+    const rows = state.medidas.map(r=>'<tr><td>'+r.data+'</td><td>'+fmt(r.peso)+'</td><td>'+fmt(r.cintura)+'</td><td>'+fmt(r.quadril)+'</td><td>'+fmt(r.peito)+'</td></tr>').join('');
+    el.appendChild(card('Histórico', '<div style="overflow:auto"><table class="small" style="width:100%;border-collapse:collapse"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>'+ (rows || '<tr><td colspan="5" class="small">Sem dados</td></tr>') +'</tbody></table></div>'));
 
     // gráfico peso
     const g = document.createElement('canvas'); g.width=760; g.height=240; g.style.width='100%';
-    el.appendChild(card('Gráfico de peso (kg)', `<div id="wrapgraf"></div>`));
-    Q('#wrapgraf').appendChild(g);
+    el.appendChild(card('Gráfico de peso (kg)', '<div id="wrapgraf"></div>'));
+    document.querySelector('#wrapgraf').appendChild(g);
     drawLineChart(g, state.medidas.map(m=>m.data), state.medidas.map(m=>m.peso));
   }
-  function fmt(v){ return (v||v===0)? String(v): '-' }
+  function fmt(v){ return (v===0 || (typeof v==='number' && !isNaN(v))) ? String(v) : '-'; }
   function drawLineChart(canvas, labels, data){
     const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
     const pad=30; const W=canvas.width, H=canvas.height; const xs=pad, ys=pad, xe=W-pad, ye=H-pad;
-    const min = Math.min(...data.filter(n=>!isNaN(n))); const max = Math.max(...data.filter(n=>!isNaN(n)));
-    if(!isFinite(min)||!isFinite(max)||min===max){ ctx.fillStyle='#789'; ctx.fillText('Adicione registros de peso para ver o gráfico.', pad, H/2); return }
+    const filtered = data.filter((n)=> typeof n === 'number' && !isNaN(n));
+    if(filtered.length < 2){ ctx.fillStyle='#789'; ctx.fillText('Adicione registros de peso para ver o gráfico.', pad, H/2); return; }
+    const min = Math.min(...filtered); const max = Math.max(...filtered);
     // eixos
     ctx.strokeStyle='#2a3b52'; ctx.beginPath(); ctx.moveTo(xs,ys); ctx.lineTo(xs,ye); ctx.lineTo(xe,ye); ctx.stroke();
-    // escala
-    const n=data.length; const stepX=(xe-xs)/Math.max(1,n-1); const range=max-min; 
-    // linhas
+    // desenho
+    const stepX=(xe-xs)/Math.max(1,filtered.length-1); const range=max-min || 1;
     ctx.strokeStyle='#38bdf8'; ctx.beginPath();
-    data.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); if(i?ctx.lineTo(x,y):ctx.moveTo(x,y) }); ctx.stroke();
-    // pontos
-    ctx.fillStyle='#22c55e'; data.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); })
+    filtered.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); if(i){ctx.lineTo(x,y);} else {ctx.moveTo(x,y);} }); ctx.stroke();
+    ctx.fillStyle='#22c55e'; filtered.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); });
   }
 
   // ====== LEMBRETES (notificações locais enquanto aberto)
@@ -312,45 +317,25 @@
         <div class="small">Dias: seg, qua, sex</div>
       </div>
       <div class="row"><button class="btn good" id="start">Salvar e iniciar</button><button class="btn ghost" id="stop">Parar</button></div>
-      <p class="small">Obs.: alertas funcionam com o app aberto. Para alertas com a tela bloqueada, publique como PWA + Push (posso te guiar depois).</p>
+      <p class="small">Obs.: alertas funcionam com o app aberto. Para alertas com a tela bloqueada, publique como PWA + Push.</p>
     `);
     el.appendChild(box);
-    Q('#perm').onclick=async()=>{ const p = await Notification.requestPermission(); state.lembretes.perm=(p==='granted'); save(); render('lembretes') };
-    Q('#start').onclick=()=>{ L.agua.on=Q('#aguaOn').checked; L.agua.interval=+Q('#aguaInt').value||60; L.agua.win=[Q('#aguaIni').value,Q('#aguaFim').value]; L.pausa.on=Q('#pausaOn').checked; L.pausa.interval=+Q('#pausaInt').value||60; L.treino.on=Q('#treinoOn').checked; L.treino.time=Q('#treinoHora').value; save(); startReminders(); alert('Lembretes iniciados'); };
-    Q('#stop').onclick=()=>{ stopReminders(); alert('Lembretes parados') };
+    document.querySelector('#perm').onclick=async()=>{ const p = await Notification.requestPermission(); state.lembretes.perm=(p==='granted'); save(); render('lembretes'); };
+    document.querySelector('#start').onclick=()=>{ L.agua.on=document.querySelector('#aguaOn').checked; L.agua.interval=+document.querySelector('#aguaInt').value||60; L.agua.win=[document.querySelector('#aguaIni').value,document.querySelector('#aguaFim').value]; L.pausa.on=document.querySelector('#pausaOn').checked; L.pausa.interval=+document.querySelector('#pausaInt').value||60; L.treino.on=document.querySelector('#treinoOn').checked; L.treino.time=document.querySelector('#treinoHora').value; save(); startReminders(); alert('Lembretes iniciados'); };
+    document.querySelector('#stop').onclick=()=>{ stopReminders(); alert('Lembretes parados'); };
   }
   let timers={agua:null,pausa:null,treino:null};
-  function stopReminders(){ Object.values(timers).forEach(t=>{ if(t) clearInterval(t) }); timers={agua:null,pausa:null,treino:null} }
-  function startReminders(){ stopReminders(); const L=state.lembretes; if(L.agua.on){ timers.agua=setInterval(()=>{ const now=new Date(); if(inWin(now,L.agua.win)){ notify('Hora de beber água','Adicione +1 copo no app.'); } }, Math.max(1,L.agua.interval)*60*1000) } if(L.pausa.on){ timers.pausa=setInterval(()=> notify('Hora de levantar','Caminhe 2 minutos e alongue.'), Math.max(1,L.pausa.interval)*60*1000) } if(L.treino.on){ timers.treino=setInterval(()=>{ const now=new Date(); const [h,m]=state.lembretes.treino.time.split(':').map(Number); if([1,3,5].includes(now.getDay()) && now.getHours()==h && now.getMinutes()==m){ notify('Treino agora','Bora! Vá no seu ritmo.'); } }, 60*1000) } }
-  function inWin(now, win){ const t=now.getHours()*60+now.getMinutes(); const [iH,iM]=win[0].split(':').map(Number), [fH,fM]=win[1].split(':').map(Number); const a=iH*60+iM, b=fH*60+fM; return a<=t && t<=b }
-  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(`${title}\n${body}`) }catch(e){ alert(`${title}\n${body}`) } }
+  function stopReminders(){ Object.values(timers).forEach(t=>{ if(t) clearInterval(t); }); timers={agua:null,pausa:null,treino:null}; }
+  function startReminders(){ stopReminders(); const L=state.lembretes; if(L.agua.on){ timers.agua=setInterval(()=>{ const now=new Date(); if(inWin(now,L.agua.win)){ notify('Hora de beber água','Adicione +1 copo no app.'); } }, Math.max(1,L.agua.interval)*60*1000); } if(L.pausa.on){ timers.pausa=setInterval(()=> notify('Hora de levantar','Caminhe 2 minutos e alongue.'), Math.max(1,L.pausa.interval)*60*1000); } if(L.treino.on){ timers.treino=setInterval(()=>{ const now=new Date(); const [h,m]=state.lembretes.treino.time.split(':').map(Number); if([1,3,5].includes(now.getDay()) && now.getHours()==h && now.getMinutes()==m){ notify('Treino agora','Bora! Vá no seu ritmo.'); } }, 60*1000); } }
+  function inWin(now, win){ const t=now.getHours()*60+now.getMinutes(); const [iH,iM]=win[0].split(':').map(Number), [fH,fM]=win[1].split(':').map(Number); const a=iH*60+iM, b=fH*60+fM; return a<=t && t<=b; }
+  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(title + '\n' + body); }catch(e){ alert(title + '\n' + body); } }
 
   // helpers
-  function Q(s){return document.querySelector(s)} function $$(s){return Array.from(document.querySelectorAll(s))}
-  function card(title, inner){ const d=document.createElement('section'); d.className='card'; d.innerHTML=`<div class="spaced"><div class="title">${title}</div></div>`+inner; return d }
-  function row(l,r){ const d=document.createElement('div'); d.className='spaced'; d.innerHTML=`<div>${l}</div><div class="small">${r}</div>`; return d }
+  function card(title, inner){ const d=document.createElement('section'); d.className='card'; d.innerHTML='<div class="spaced"><div class="title">'+title+'</div></div>'+inner; return d; }
 
   // PWA (instalável)
-  async function initSW(){ if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js') }catch(e){ console.log('SW', e) } } }
+  async function initSW(){ if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){ console.log('SW', e); } } }
 })();
 </script>
-
-<!-- ======= ARQUIVOS EXTRAS (crie estes ao publicar) =======
-1) Salve como sw.js no mesmo diretório:
-self.addEventListener('install', e=>{ self.skipWaiting(); e.waitUntil(caches.open('benatti-gym-v1').then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']))) });
-self.addEventListener('activate', e=> self.clients.claim());
-self.addEventListener('fetch', e=>{ e.respondWith(caches.match(e.request).then(r=> r || fetch(e.request))) });
-
-2) Salve como manifest.webmanifest no mesmo diretório:
-{
-  "name": "Academia do Benatti",
-  "short_name": "Benatti Gym",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#0ea5e9",
-  "icons": []
-}
--->
 </body>
 </html>
