@@ -1,261 +1,58 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Academia do Benatti</title>
-  <meta name="theme-color" content="#0ea5e9" />
-  <style>
-    :root { --bg:#0b1220; --card:#111a2b; --ink:#e7eef7; --mut:#9fb2c8; --line:#223249; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;background:#0b1220;color:var(--ink)}
-    header{position:sticky;top:0;z-index:5;background:#0e1424;border-bottom:1px solid #132036;padding:14px 16px}
-    .container{max-width:860px;margin:0 auto;padding:16px}
-    .h1{font-weight:800}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .spaced{display:flex;justify-content:space-between;align-items:center}
-    .btn{appearance:none;border:1px solid var(--line);background:#12233a;color:var(--ink);padding:10px 12px;border-radius:12px;font-weight:700;cursor:pointer}
-    .btn.primary{background:linear-gradient(180deg,#1a90d1,#1578ad);border-color:#16638b}
-    .btn.good{background:#0f2a18;border-color:#1e4d2f}
-    .btn.bad{background:#2b0e11;border-color:#5d1a21}
-    .progress{height:10px;background:#162236;border-radius:999px;overflow:hidden}
-    .progress>div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
-    .tabbar{position:sticky;bottom:0;background:#0e1424;border-top:1px solid #1a2638;display:flex;gap:6px;padding:10px;z-index:5}
-    .tab{flex:1;background:#102036;border:1px solid var(--line);color:#cfe0f7;padding:10px;border-radius:12px;font-size:13px;cursor:pointer}
-    .tab.active{background:#153250;border-color:#2f547a;color:#fff}
-    .list{display:flex;flex-direction:column;gap:8px}
-    .small{font-size:12px;color:var(--mut)}
-    .title{font-weight:800}
-    .input{background:#0c1526;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
-    .modal.open{display:flex}
-    .modal .box{background:#0d1626;border:1px solid var(--line);border-radius:16px;max-width:880px;width:92vw;max-height:80vh;overflow:hidden}
-    .modal header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #1f2a33}
-    .modal iframe,.modal video{display:block;width:100%;height:56.25vw;max-height:70vh}
-    .error-msg {color: #f87171; padding: 16px; text-align: center;}
-    .loading {display: flex; justify-content: center; align-items: center; height: 200px;}
-    .loading::after {content: ""; width: 40px; height: 40px; border: 4px solid #3b82f6; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;}
-    @keyframes spin {to {transform: rotate(360deg);}}
-  </style>
-</head>
-<body>
-  <header class="spaced container">
-    <div class="h1">Academia do Benatti</div>
-    <div id="today" class="small"></div>
-  </header>
+function openDemo(i){
+  const ex = state.biblioteca[i];
+  if(!ex) return;
 
-  <main id="view" class="container"></main>
+  byId('modalTitle').textContent = ex.nome;
 
-  <nav class="tabbar">
-    <button class="tab active" data-tab="hoje">Hoje</button>
-    <button class="tab" data-tab="treinos">Treinos</button>
-    <button class="tab" data-tab="biblioteca">Biblioteca</button>
-    <button class="tab" data-tab="medidas">Medidas</button>
-    <button class="tab" data-tab="lembretes">Lembretes</button>
-  </nav>
+  // Mostra spinner inicial
+  byId('modalContent').innerHTML = `
+    <div class="loading"></div>
+    <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
+  `;
+  byId('modal').classList.add('open');
 
-  <div class="modal" id="modal">
-    <div class="box">
-      <header>
-        <div class="title" id="modalTitle">Demonstração</div>
-        <button class="btn" id="closeModal">Fechar</button>
-      </header>
-      <div class="content" id="modalContent"></div>
-    </div>
-  </div>
+  // Cria elemento de vídeo
+  const video = document.createElement('video');
+  video.controls = true;
+  video.playsInline = true;
+  video.muted = true;  // necessário no mobile p/ autoplay
+  video.style.width = '100%';
+  video.style.maxHeight = '70vh';
 
-<script>
-(function(){
-  const LS='benatti.gym.v1';
-  const state = load() || seed();
-  ensureToday();
-  render('hoje');
-  initSW();
+  const source = document.createElement('source');
+  source.src = ex.video;
+  source.type = 'video/mp4';
+  video.appendChild(source);
 
-  function seed(){
-    return {
-      hoje:{date:ymd(new Date()),aguaMl:0,treino:[],notas:''},
-      settings:{aguaMetaMl:2000,copoMl:250},
-      biblioteca:[
-        {id:id(),nome:'Leg press',video:'https://cablack.github.io/benatti-gym/media/leg-press.mp4',dicas:'Joelho alinhado ao pé.'},
-        {id:id(),nome:'Cadeira extensora',video:'https://cablack.github.io/benatti-gym/media/cadeira-extensora.mp4',dicas:'Controle na subida e descida.'},
-        {id:id(),nome:'Mesa flexora',video:'https://cablack.github.io/benatti-gym/media/mesa-flexora.mp4',dicas:'Não tire o quadril do banco.'},
-        {id:id(),nome:'Remada baixa',video:'https://cablack.github.io/benatti-gym/media/remada-baixa.mp4',dicas:'Peito aberto; puxe pelo cotovelo.'},
-        {id:id(),nome:'Prancha',video:'https://cablack.github.io/benatti-gym/media/prancha.mp4',dicas:'Alinhe cabeça, tronco e quadril.'}
-      ],
-      treinos:[{id:id(),nome:'Fase inicial',itens:[{ex:0,series:2,reps:'12-15'},{ex:1,series:2,reps:'12-15'},{ex:2,series:2,reps:'12-15'},{ex:3,series:2,reps:'12-15'},{ex:4,series:2,reps:'10-20s'}]}],
-      medidas:[],
-      lembretes:{}
-    }
-  }
+  // Quando o vídeo puder começar a tocar
+  video.addEventListener('canplay', function() {
+    byId('modalContent').innerHTML = '';
+    byId('modalContent').appendChild(video);
 
-  function id(){return Math.random().toString(36).slice(2,9)}
-  function ymd(d){return d.toISOString().slice(0,10)}
-  function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
-  function save(){localStorage.setItem(LS,JSON.stringify(state))}
-  function ensureToday(){
-    const t=new Date();
-    document.getElementById('today').textContent=t.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-    if(!state.hoje||state.hoje.date!==ymd(t)) state.hoje={date:ymd(t),aguaMl:0,treino:[],notas:''};
-    save();
-  }
-
-  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); render(b.dataset.tab);
+    // tenta autoplay
+    video.play().catch(() => {
+      console.log('Autoplay bloqueado, mostrando controles');
+    });
   });
 
-  function render(tab){
-    const el=document.getElementById('view'); el.innerHTML='';
-    if(tab==='hoje') return viewHoje(el);
-    if(tab==='treinos') return viewTreinos(el);
-    if(tab==='biblioteca') return viewBiblioteca(el);
-    if(tab==='medidas') return viewMedidas(el);
-    if(tab==='lembretes') return viewLembretes(el);
-  }
-
-  function viewHoje(el){
-    const pct=Math.min(100,Math.round(100*state.hoje.aguaMl/state.settings.aguaMetaMl));
-    el.appendChild(card('Resumo do dia',`
-      <div>
-        <div class="small">Água</div>
-        <div class="title"><span>${state.hoje.aguaMl}</span> / ${state.settings.aguaMetaMl} ml</div>
-        <div class="progress"><div style="width:${pct}%"></div></div>
-        <div class="row" style="margin-top:8px">
-          <button class="btn primary" id="maisCopo">+1 copo (${state.settings.copoMl}ml)</button>
-          <button class="btn" id="menosCopo">-1 copo</button>
-          <button class="btn" id="zerarAgua">Zerar</button>
-        </div>
-      </div>`));
-    byId('maisCopo').onclick=()=>{state.hoje.aguaMl+=state.settings.copoMl;save();render('hoje')};
-    byId('menosCopo').onclick=()=>{state.hoje.aguaMl=Math.max(0,state.hoje.aguaMl-state.settings.copoMl);save();render('hoje')};
-    byId('zerarAgua').onclick=()=>{state.hoje.aguaMl=0;save();render('hoje')};
-  }
-
-  function viewTreinos(el){
-    const t=state.treinos[0];
-    el.appendChild(card('Plano de treino',`
-      <div class="list">${t.itens.map(it=>{
-        const ex=state.biblioteca[it.ex];
-        return '<div>'+ex.nome+' — '+it.series+'×'+it.reps+'</div>';
-      }).join('')}</div>`));
-  }
-
-  function viewBiblioteca(el){
-    const list=(state.biblioteca||[]).map((ex,i)=>`
-      <div class="card">
-        <div class="spaced">
-          <div class="title">#${i} ${ex.nome}</div>
-          <button class="btn" data-demo="${i}">▶ Ver</button>
-        </div>
-        <div class="small">${ex.dicas||''}</div>
-      </div>`).join('');
-    el.appendChild(card('Biblioteca de exercícios',list));
-    document.querySelectorAll('button[data-demo]').forEach(b=>b.onclick=()=>openDemo(+b.dataset.demo));
-  }
-
-  function viewMedidas(el){
-    el.appendChild(card('Registrar medidas',`
-      <div class="row"><label>Peso (kg)<input id="m_peso" type="number" class="input"></label>
-      <label>Cintura (cm)<input id="m_cint" type="number" class="input"></label>
-      <button class="btn good" id="salvarMed">Salvar</button></div>`));
-    byId('salvarMed').onclick=()=>{
-      state.medidas.push({data:ymd(new Date()),peso:+byId('m_peso').value||null,cintura:+byId('m_cint').value||null});
-      save();alert('Medida salva!');
-    };
-  }
-
-  function viewLembretes(el){
-    el.appendChild(card('Lembretes',`
-      <p class="small">Configurações futuras de notificações aqui.</p>`));
-  }
-
-  function openDemo(i){
-    const ex=state.biblioteca[i];
-    if(!ex) return;
-    
-    byId('modalTitle').textContent = ex.nome;
-    
-    // Adicionar indicador de carregamento
-    byId('modalContent').innerHTML = `
-      <div class="loading"></div>
-      <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
-    `;
-    
-    byId('modal').classList.add('open');
-    
-    // Criar elemento de vídeo com melhores atributos
-    const video = document.createElement('video');
-    video.controls = true;
-    video.playsInline = true;
-    video.muted = true; // Necessário para autoplay em dispositivos móveis
-    video.style.width = '100%';
-    video.style.maxHeight = '70vh';
-    
-    const source = document.createElement('source');
-    source.src = ex.video;
-    source.type = 'video/mp4';
-    
-    video.appendChild(source);
-    
-    // Quando o vídeo estiver carregado, substituir o conteúdo
-    video.addEventListener('loadeddata', function() {
+  // Timeout de fallback (5s)
+  setTimeout(() => {
+    if (byId('modalContent').querySelector('.loading')) {
       byId('modalContent').innerHTML = '';
       byId('modalContent').appendChild(video);
-      
-      // Tentar reproduzir o vídeo
-      video.play().catch(error => {
-        console.log('Autoplay bloqueado:', error);
-        byId('modalContent').innerHTML = `
-          <div class="error-msg">
-            <p>Clique no botão de play para iniciar o vídeo.</p>
-            <p>Se o vídeo não carregar, verifique sua conexão.</p>
-          </div>
-          <video controls playsInline style="width:100%; max-height:70vh;">
-            <source src="${ex.video}" type="video/mp4">
-          </video>
-        `;
-      });
-    });
-    
-    // Tratar erros de carregamento
-    video.addEventListener('error', function() {
-      byId('modalContent').innerHTML = `
-        <div class="error-msg">
-          <p>Erro ao carregar o vídeo.</p>
-          <p>Verifique sua conexão ou tente novamente mais tarde.</p>
-        </div>
-      `;
-    });
-    
-    // Pré-carregar o vídeo
-    video.load();
-  }
-  
-  byId('closeModal').onclick=()=>{
-    byId('modal').classList.remove('open');
-    // Parar qualquer vídeo que esteja tocando
-    const video = byId('modalContent').querySelector('video');
-    if (video) {
-      video.pause();
     }
-  };
+  }, 5000);
 
-  function card(title,inner){
-    const d=document.createElement('section');
-    d.className='card';
-    d.innerHTML='<div class="spaced"><div class="title">'+title+'</div></div>'+inner;
-    return d;
-  }
-  function byId(id){return document.getElementById(id)}
+  // Tratamento de erro
+  video.addEventListener('error', function() {
+    byId('modalContent').innerHTML = `
+      <div class="error-msg">
+        <p>Erro ao carregar o vídeo.</p>
+        <p>Verifique sua conexão ou tente novamente.</p>
+      </div>
+    `;
+  });
 
-  async function initSW(){
-    if('serviceWorker' in navigator){
-      try{await navigator.serviceWorker.register('sw.js')}catch(e){}
-    }
-  }
-})();
-</script>
-</body>
-</html>
+  // dispara carregamento
+  video.load();
+}
