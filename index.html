@@ -37,7 +37,6 @@
     .loading {display: flex; justify-content: center; align-items: center; height: 200px;}
     .loading::after {content: ""; width: 40px; height: 40px; border: 4px solid #3b82f6; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;}
     @keyframes spin {to {transform: rotate(360deg);}}
-    .retry-btn {margin-top: 10px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;}
   </style>
 </head>
 <body>
@@ -172,75 +171,64 @@
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
 
-  function openDemo(i) {
+  // ==== corrigido openDemo() ====
+  function openDemo(i){
     const ex = state.biblioteca[i];
-    if (!ex) return;
-    
+    if(!ex) return;
+
     byId('modalTitle').textContent = ex.nome;
-    
-    // Mostra spinner inicial
+
+    // Mostra spinner
     byId('modalContent').innerHTML = `
       <div class="loading"></div>
       <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
     `;
-    
     byId('modal').classList.add('open');
-    
-    // Cria elemento de vídeo
+
     const video = document.createElement('video');
     video.controls = true;
     video.playsInline = true;
-    video.muted = true; // necessário no mobile p/ autoplay
+    video.muted = true;
     video.style.width = '100%';
     video.style.maxHeight = '70vh';
-    
+
     const source = document.createElement('source');
     source.src = ex.video;
     source.type = 'video/mp4';
     video.appendChild(source);
-    
-    // Quando o vídeo puder começar a tocar
+
+    // Quando puder tocar
     video.addEventListener('canplay', function() {
       byId('modalContent').innerHTML = '';
       byId('modalContent').appendChild(video);
-      
-      // tenta autoplay
-      video.play().catch(() => {
-        console.log('Autoplay bloqueado, mostrando controles');
-      });
+      video.play().catch(()=>{console.log('Autoplay bloqueado');});
     });
-    
-    // Timeout de fallback (5s)
-    const timeoutId = setTimeout(() => {
+
+    // Timeout fallback 5s
+    setTimeout(() => {
       if (byId('modalContent').querySelector('.loading')) {
         byId('modalContent').innerHTML = '';
         byId('modalContent').appendChild(video);
       }
     }, 5000);
-    
-    // Tratamento de erro
+
+    // Erro
     video.addEventListener('error', function() {
-      clearTimeout(timeoutId);
       byId('modalContent').innerHTML = `
         <div class="error-msg">
           <p>Erro ao carregar o vídeo.</p>
           <p>Verifique sua conexão ou tente novamente.</p>
-          <button class="retry-btn" onclick="window.open('${ex.video}', '_blank')">Abrir em nova janela</button>
         </div>
       `;
     });
-    
-    // dispara carregamento
+
     video.load();
   }
-  
-  byId('closeModal').onclick = function() {
+
+  byId('closeModal').onclick=()=>{
     byId('modal').classList.remove('open');
-    // Parar qualquer vídeo que esteja tocando
     const video = byId('modalContent').querySelector('video');
-    if (video) {
-      video.pause();
-    }
+    if(video) video.pause();
   };
 
   function card(title,inner){
