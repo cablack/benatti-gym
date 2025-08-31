@@ -37,8 +37,6 @@
     .loading {display: flex; justify-content: center; align-items: center; height: 200px;}
     .loading::after {content: ""; width: 40px; height: 40px; border: 4px solid #3b82f6; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;}
     @keyframes spin {to {transform: rotate(360deg);}}
-    .video-container {position: relative;}
-    .video-placeholder {background: #1a243b; display: flex; justify-content: center; align-items: center; height: 200px; border-radius: 8px; color: var(--mut);}
     .retry-btn {margin-top: 10px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;}
   </style>
 </head>
@@ -174,13 +172,13 @@
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
 
-  function openDemo(i){
-    const ex=state.biblioteca[i];
-    if(!ex) return;
+  function openDemo(i) {
+    const ex = state.biblioteca[i];
+    if (!ex) return;
     
     byId('modalTitle').textContent = ex.nome;
     
-    // Adicionar indicador de carregamento
+    // Mostra spinner inicial
     byId('modalContent').innerHTML = `
       <div class="loading"></div>
       <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
@@ -188,104 +186,55 @@
     
     byId('modal').classList.add('open');
     
-    // Testar se o vídeo está acessível antes de tentar carregar
-    testVideoAccess(ex.video).then(accessible => {
-      if (accessible) {
-        createVideoPlayer(ex.video);
-      } else {
-        showVideoError(ex.video, ex.nome);
-      }
-    }).catch(() => {
-      showVideoError(ex.video, ex.nome);
-    });
-  }
-  
-  function testVideoVideo(url) {
-    return new Promise((resolve) => {
-      // Timeout para não ficar travado eternamente
-      const timeout = setTimeout(() => resolve(false), 10000);
+    // Cria elemento de vídeo
+    const video = document.createElement('video');
+    video.controls = true;
+    video.playsInline = true;
+    video.muted = true; // necessário no mobile p/ autoplay
+    video.style.width = '100%';
+    video.style.maxHeight = '70vh';
+    
+    const source = document.createElement('source');
+    source.src = ex.video;
+    source.type = 'video/mp4';
+    video.appendChild(source);
+    
+    // Quando o vídeo puder começar a tocar
+    video.addEventListener('canplay', function() {
+      byId('modalContent').innerHTML = '';
+      byId('modalContent').appendChild(video);
       
-      // Tentar fazer uma requisição HEAD para verificar se o vídeo existe
-      fetch(url, { method: 'HEAD', mode: 'no-cors' })
-        .then(response => {
-          clearTimeout(timeout);
-          // Se conseguimos uma resposta (mesmo que sem CORS), assumimos que existe
-          resolve(true);
-        })
-        .catch(error => {
-          clearTimeout(timeout);
-          console.log('Erro ao acessar vídeo:', error);
-          resolve(false);
-        });
+      // tenta autoplay
+      video.play().catch(() => {
+        console.log('Autoplay bloqueado, mostrando controles');
+      });
     });
-  }
-  
-  function createVideoPlayer(videoUrl) {
-    byId('modalContent').innerHTML = `
-      <div class="video-container">
-        <video controls playsinline style="width:100%; max-height:70vh;">
-          <source src="${videoUrl}" type="video/mp4">
-          Seu navegador não suporta o elemento de vídeo.
-        </video>
-        <p class="small" style="text-align: center; margin-top: 8px;">
-          Se o vídeo não carregar, <button class="retry-btn" onclick="location.reload()">clique para recarregar</button>
-        </p>
-      </div>
-    `;
     
-    const video = byId('modalContent').querySelector('video');
+    // Timeout de fallback (5s)
+    const timeoutId = setTimeout(() => {
+      if (byId('modalContent').querySelector('.loading')) {
+        byId('modalContent').innerHTML = '';
+        byId('modalContent').appendChild(video);
+      }
+    }, 5000);
     
-    // Adicionar eventos para detectar problemas de carregamento
-    video.addEventListener('error', function(e) {
-      console.log('Erro no vídeo:', e);
+    // Tratamento de erro
+    video.addEventListener('error', function() {
+      clearTimeout(timeoutId);
       byId('modalContent').innerHTML = `
         <div class="error-msg">
-          <p>Erro ao carregar o vídeo. O servidor pode estar indisponível.</p>
-          <button class="retry-btn" onclick="location.reload()">Tentar novamente</button>
+          <p>Erro ao carregar o vídeo.</p>
+          <p>Verifique sua conexão ou tente novamente.</p>
+          <button class="retry-btn" onclick="window.open('${ex.video}', '_blank')">Abrir em nova janela</button>
         </div>
       `;
     });
     
-    video.addEventListener('stalled', function() {
-      console.log('Vídeo travado durante carregamento');
-      byId('modalContent').querySelector('p').innerHTML = 
-        'Conexão lenta. Aguardando dados... <button class="retry-btn" onclick="location.reload()">Recarregar</button>';
-    });
-    
-    // Timeout para detectar se o vídeo não começa a carregar
-    setTimeout(() => {
-      if (video.readyState < 2) { // MENOS QUE HAVE_CURRENT_DATA
-        byId('modalContent').innerHTML = `
-          <div class="error-msg">
-            <p>O vídeo está demorando muito para carregar.</p>
-            <p>Verifique sua conexão com a internet.</p>
-            <button class="retry-btn" onclick="location.reload()">Tentar novamente</button>
-            <button class="retry-btn" onclick="window.open('${videoUrl}', '_blank')">Abrir vídeo em nova janela</button>
-          </div>
-        `;
-      }
-    }, 8000);
+    // dispara carregamento
+    video.load();
   }
   
-  function showVideoError(videoUrl, exerciseName) {
-    byId('modalContent').innerHTML = `
-      <div class="error-msg">
-        <p>Não foi possível acessar o vídeo para "${exerciseName}".</p>
-        <p>Possíveis causas:</p>
-        <ul style="text-align: left; margin-left: 20px;">
-          <li>Problema temporário no servidor</li>
-          <li>Problema de conexão com a internet</li>
-          <li>O vídeo pode ter sido movido ou removido</li>
-        </ul>
-        <div style="margin-top: 16px;">
-          <button class="retry-btn" onclick="location.reload()">Tentar novamente</button>
-          <button class="retry-btn" onclick="window.open('${videoUrl}', '_blank')">Abrir vídeo em nova janela</button>
-        </div>
-      </div>
-    `;
-  }
-  
-  byId('closeModal').onclick=()=>{
+  byId('closeModal').onclick = function() {
     byId('modal').classList.remove('open');
     // Parar qualquer vídeo que esteja tocando
     const video = byId('modalContent').querySelector('video');
