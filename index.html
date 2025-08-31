@@ -21,14 +21,13 @@
 .btn.bad{background:#2b0e11;border-color:#5d1a21}
 .grid{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
 .input{background:#0c1526;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px}
-.kbd{font-family:ui-monospace,Menlo,monospace;border:1px solid var(--line);padding:2px 6px;border-radius:6px;background:#0b1220}
 .progress{height:10px;background:#162236;border-radius:999px;overflow:hidden}
 .progress>div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
 .tabbar{position:sticky;bottom:0;background:rgba(11,18,32,.9);backdrop-filter:blur(8px);border-top:1px solid #1a2638;display:flex;gap:6px;padding:10px;z-index:5}
 .tab{flex:1;background:#102036;border:1px solid var(--line);color:#cfe0f7;padding:10px;border-radius:12px;font-size:13px}
 .tab.active{background:#153250;border-color:#2f547a;color:#fff}
 .list{display:flex;flex-direction:column;gap:8px}
-.small{font-size:12px;color:var(--mut)}
+.small{font-size:12px;color:#9fb2c8}
 .title{font-weight:800}
 .num{font-variant-numeric:tabular-nums}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
@@ -62,6 +61,14 @@
 
 <script>
 (function(){
+  // MOSTRAR ERRO NA TELA (se algo quebrar)
+  window.addEventListener('error', e=>{
+    const p=document.createElement('pre');
+    p.textContent='Erro: '+e.message;
+    p.style.cssText='position:fixed;left:8px;bottom:8px;background:#2b0e11;color:#fff;border:1px solid #5d1a21;border-radius:8px;padding:8px;max-width:90vw;z-index:9999';
+    document.body.appendChild(p);
+  });
+
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -75,11 +82,11 @@
       settings: { aguaMetaMl:2000, copoMl:250 },
       lembretes: { perm:false, agua:{on:false, interval:60, win:['08:00','22:00']}, pausa:{on:true, interval:60}, treino:{on:false, days:[1,3,5], time:'18:30'} },
       biblioteca: [
-        { id:id(), nome:'Leg press',         gif:'', video:'media/leg-press.mp4',          dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
-        { id:id(), nome:'Cadeira extensora', gif:'', video:'media/cadeira-extensora.mp4',  dicas:'Controle na subida e descida; não travar joelhos.' },
-        { id:id(), nome:'Mesa flexora',      gif:'', video:'media/mesa-flexora.mp4',       dicas:'Evite tirar o quadril do banco.' },
-        { id:id(), nome:'Remada baixa',      gif:'', video:'media/remada-baixa.mp4',       dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
-        { id:id(), nome:'Prancha',           gif:'', video:'media/prancha.mp4',            dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
+        { id:id(), nome:'Leg press',         gif:'', video:'media/leg-press.mp4',         dicas:'Joelho alinhado ao pé; descer sem tirar lombar do encosto.' },
+        { id:id(), nome:'Cadeira extensora', gif:'', video:'media/cadeira-extensora.mp4', dicas:'Controle na subida e descida; não travar joelhos.' },
+        { id:id(), nome:'Mesa flexora',      gif:'', video:'media/mesa-flexora.mp4',      dicas:'Evite tirar o quadril do banco.' },
+        { id:id(), nome:'Remada baixa',      gif:'', video:'media/remada-baixa.mp4',      dicas:'Peito aberto, ombros para trás; puxe pelo cotovelo.' },
+        { id:id(), nome:'Prancha',           gif:'', video:'media/prancha.mp4',           dicas:'Alinhe cabeça, tronco e quadril; contraia abdômen.' }
       ],
       treinos: [
         { id:id(), nome:'Fase inicial', itens:[ {ex:0, series:2, reps:'12-15'}, {ex:1, series:2, reps:'12-15'}, {ex:2, series:2, reps:'12-15'}, {ex:3, series:2, reps:'12-15'}, {ex:4, series:2, reps:'10-20s'} ] }
@@ -88,13 +95,13 @@
     }
   }
 
-  // Se a Biblioteca local existir sem vídeo, preenche pelo nome
+  // completar vídeos se a biblioteca local tiver sem link
   const DEFAULT_MEDIA = {
-    'Leg press':         'media/leg-press.mp4',
+    'Leg press': 'media/leg-press.mp4',
     'Cadeira extensora': 'media/cadeira-extensora.mp4',
-    'Mesa flexora':      'media/mesa-flexora.mp4',
-    'Remada baixa':      'media/remada-baixa.mp4',
-    'Prancha':           'media/prancha.mp4'
+    'Mesa flexora': 'media/mesa-flexora.mp4',
+    'Remada baixa': 'media/remada-baixa.mp4',
+    'Prancha': 'media/prancha.mp4'
   };
   function migrateMedia(){
     let changed=false;
@@ -117,7 +124,10 @@
   }
 
   // NAV
-  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(b.dataset.tab)})
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); render(b.dataset.tab)
+  });
 
   function render(tab){
     const el = document.getElementById('view'); el.innerHTML='';
@@ -166,190 +176,4 @@
         <span><input type="checkbox" ${checked?'checked':''} data-chk="${i}"> ${ex.nome} — ${it.series}×${it.reps}</span>
         <button class="btn" data-demo="${it.ex}">${ex.gif||ex.video? '▶ Ver' : '＋ Demo'}</button>
       </label>`;
-    }).join('');
-    const html = `<div class="list">${itens}
-      <div class="row"><button class="btn" id="editarTreino">Editar treino</button></div>
-    </div>`;
-    setTimeout(()=>{
-      document.querySelectorAll('input[data-chk]').forEach(inp=> inp.onchange=()=>{
-        const i=+inp.dataset.chk;
-        const at=state.hoje.treino.indexOf(i);
-        if(inp.checked && at===-1) state.hoje.treino.push(i);
-        if(!inp.checked && at!==-1) state.hoje.treino.splice(at,1);
-        save();
-      });
-      document.querySelectorAll('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
-      document.querySelector('#editarTreino').onclick=()=> editTreino();
-    });
-    return html;
-  }
-
-  // ====== TREINOS
-  function viewTreinos(el){
-    const t = state.treinos[0];
-    const box = card('Plano de treino', `<div class="list" id="lista">
-      ${t.itens.map((it)=>{ const ex=state.biblioteca[it.ex]; return row(`${ex.nome}`, `${it.series}×${it.reps}`)}).join('')}
-    </div>
-    <div class="row" style="margin-top:8px">
-      <button class="btn" id="addItem">+ Adicionar exercício</button>
-      <button class="btn" id="reordenar">Reordenar</button>
-      <button class="btn" id="limpar">Limpar</button>
-    </div>`);
-    el.appendChild(box);
-    document.querySelector('#addItem').onclick=()=> addItemTreino();
-    document.querySelector('#reordenar').onclick=()=> reorderTreino();
-    document.querySelector('#limpar').onclick=()=>{ if(confirm('Limpar treino?')){ t.itens=[]; save(); render('treinos'); } };
-
-    el.appendChild(card('Dicas', `<ul class="small"><li>Evite impacto nesta fase</li><li>Respire e mantenha postura</li><li>Se doer joelho/lombar, reduza carga</li></ul>`));
-  }
-  function addItemTreino(){
-    const idx = +prompt('Número do exercício na biblioteca? (veja na aba Biblioteca)');
-    if(isNaN(idx) || !state.biblioteca[idx]) return alert('Índice inválido');
-    const s = +prompt('Séries?', '2')||2; const r = prompt('Reps/tempo?', '12-15')||'12-15';
-    state.treinos[0].itens.push({ex:idx, series:s, reps:r}); save(); render('treinos');
-  }
-  function reorderTreino(){
-    const t = state.treinos[0];
-    const mapa = t.itens.map((it,i)=>`${i}:${state.biblioteca[it.ex].nome}`).join('\n');
-    const seq = prompt('Nova ordem (ex.: 0,2,1,3...)\n'+mapa);
-    if(!seq) return; const arr = seq.split(',').map(s=>+s.trim()).filter(n=>!isNaN(n));
-    if(arr.length!==t.itens.length) return alert('Quantidade não confere');
-    t.itens = arr.map(i=>t.itens[i]); save(); render('treinos');
-  }
-  function editTreino(){ render('treinos'); alert('Abra a aba Treinos para editar.'); }
-
-  // ====== BIBLIOTECA (com GIF/MP4/YouTube)
-  function viewBiblioteca(el){
-    const list = state.biblioteca.map((ex,i)=>{
-      const hasDemo = ex.gif||ex.video;
-      return `<div class="card">
-        <div class="spaced"><div class="title">#${i} ${ex.nome}</div>
-          <div class="row"><button class="btn" data-demo="${i}">${hasDemo? '▶ Ver demo' : '＋ Adicionar demo'}</button>
-          <button class="btn" data-edit="${i}">Editar</button>
-          <button class="btn bad" data-del="${i}">Excluir</button></div>
-        </div>
-        <div class="small">${ex.dicas||''}</div>
-      </div>`;
-    }).join('');
-    const wrap = card('Biblioteca de exercícios', `<div class="row"><button class="btn" id="novoEx">+ Novo exercício</button></div><div>${list}</div>`);
-    el.appendChild(wrap);
-    document.querySelector('#novoEx').onclick=()=> novoEx();
-    document.querySelectorAll('button[data-demo]').forEach(b=> b.onclick=()=> openDemo(+b.dataset.demo));
-    document.querySelectorAll('button[data-edit]').forEach(b=> b.onclick=()=> editEx(+b.dataset.edit));
-    document.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=> delEx(+b.dataset.del));
-  }
-  function novoEx(){
-    const nome = prompt('Nome do exercício?'); if(!nome) return;
-    const dicas = prompt('Dicas rápidas (opcional)?','');
-    state.biblioteca.push({id:id(),nome, gif:'', video:'', dicas}); save(); render('biblioteca');
-  }
-  function editEx(i){
-    const ex = state.biblioteca[i]; if(!ex) return;
-    const nome = prompt('Nome', ex.nome)||ex.nome;
-    const gif = prompt('URL de GIF/MP4 (opcional). Dica: use arquivos da pasta media/', ex.gif||'')||'';
-    const video = prompt('URL do YouTube/MP4 (opcional)', ex.video||'')||'';
-    const dicas = prompt('Dicas', ex.dicas||'')||'';
-    Object.assign(ex,{nome,gif,video,dicas}); save(); render('biblioteca');
-  }
-  function delEx(i){ if(confirm('Excluir exercício?')){ state.biblioteca.splice(i,1); save(); render('biblioteca'); } }
-  function openDemo(i){
-    const ex = state.biblioteca[i];
-    if(!ex) return;
-    const m = document.querySelector('#modal'); document.querySelector('#modalTitle').textContent = ex.nome;
-    const url = ex.gif||ex.video;
-    if(!url){ editEx(i); return; }
-    const html = buildEmbed(url);
-    document.querySelector('#modalContent').innerHTML = html; m.classList.add('open');
-  }
-  document.querySelector('#closeModal').onclick=()=> document.querySelector('#modal').classList.remove('open');
-  function buildEmbed(url){
-    try{
-      if(/\.(mp4|webm|gif)$/i.test(url)) return '<video src="'+url+'" autoplay controls loop muted playsinline></video>';
-      const yt = url.match(/(?:youtu.be\/|v=)([\w-]{6,})/); if(yt) return '<iframe src="https://www.youtube.com/embed/'+yt[1]+'" frameborder="0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
-      return '<iframe src="'+url+'" frameborder="0"></iframe>';
-    }catch(e){ return '<div class="card">Não deu para abrir o vídeo. Verifique o link.</div>'; }
-  }
-
-  // ====== MEDIDAS + gráfico simples
-  function viewMedidas(el){
-    const box = card('Registrar medidas', `<div class="grid g3">
-      <label>Peso (kg)<input id="m_peso" type="number" step="0.1" class="input"></label>
-      <label>Cintura (cm)<input id="m_cint" type="number" step="0.1" class="input"></label>
-      <label>Quadril (cm)<input id="m_quad" type="number" step="0.1" class="input"></label>
-      <label>Peito (cm)<input id="m_peito" type="number" step="0.1" class="input"></label>
-      <label>Data<input id="m_data" type="date" class="input" value="${ymd(new Date())}"></label>
-      <div class="row"><button class="btn good" id="salvarMed">Salvar</button><button class="btn ghost" id="limparMed">Limpar</button></div>
-    </div>`);
-    el.appendChild(box);
-    document.querySelector('#salvarMed').onclick=()=>{
-      const rec = { data:document.querySelector('#m_data').value, peso:+document.querySelector('#m_peso').value||null, cintura:+document.querySelector('#m_cint').value||null, quadril:+document.querySelector('#m_quad').value||null, peito:+document.querySelector('#m_peito').value||null };
-      state.medidas.push(rec); save(); render('medidas');
-    };
-    document.querySelector('#limparMed').onclick=()=>{['#m_peso','#m_cint','#m_quad','#m_peito'].forEach(sel=>document.querySelector(sel).value='');};
-
-    const rows = state.medidas.map(r=>'<tr><td>'+r.data+'</td><td>'+fmt(r.peso)+'</td><td>'+fmt(r.cintura)+'</td><td>'+fmt(r.quadril)+'</td><td>'+fmt(r.peito)+'</td></tr>').join('');
-    el.appendChild(card('Histórico', '<div style="overflow:auto"><table class="small" style="width:100%;border-collapse:collapse"><thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Quadril</th><th>Peito</th></tr></thead><tbody>'+ (rows || '<tr><td colspan="5" class="small">Sem dados</td></tr>') +'</tbody></table></div>'));
-
-    const g = document.createElement('canvas'); g.width=760; g.height=240; g.style.width='100%';
-    el.appendChild(card('Gráfico de peso (kg)', '<div id="wrapgraf"></div>'));
-    document.querySelector('#wrapgraf').appendChild(g);
-    drawLineChart(g, state.medidas.map(m=>m.data), state.medidas.map(m=>m.peso));
-  }
-  function fmt(v){ return (v===0 || (typeof v==='number' && !isNaN(v))) ? String(v) : '-'; }
-  function drawLineChart(canvas, labels, data){
-    const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-    const pad=30; const W=canvas.width, H=canvas.height; const xs=pad, ys=pad, xe=W-pad, ye=H-pad;
-    const filtered = data.filter((n)=> typeof n === 'number' && !isNaN(n));
-    if(filtered.length < 2){ ctx.fillStyle='#789'; ctx.fillText('Adicione registros de peso para ver o gráfico.', pad, H/2); return; }
-    const min = Math.min(...filtered); const max = Math.max(...filtered);
-    ctx.strokeStyle='#2a3b52'; ctx.beginPath(); ctx.moveTo(xs,ys); ctx.lineTo(xs,ye); ctx.lineTo(xe,ye); ctx.stroke();
-    const stepX=(xe-xs)/Math.max(1,filtered.length-1); const range=max-min || 1;
-    ctx.strokeStyle='#38bdf8'; ctx.beginPath();
-    filtered.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); if(i){ctx.lineTo(x,y);} else {ctx.moveTo(x,y);} }); ctx.stroke();
-    ctx.fillStyle='#22c55e'; filtered.forEach((v,i)=>{ const x=xs+i*stepX; const y=ye-((v-min)/range)*(ye-ys); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); });
-  }
-
-  // ====== LEMBRETES
-  function viewLembretes(el){
-    const L = state.lembretes;
-    const box = card('Lembretes', `
-      <div class="row"><button class="btn" id="perm">${L.perm? 'Permissão OK' : 'Ativar notificações'}</button></div>
-      <div class="grid g2">
-        <div class="card"><div class="title">Água</div>
-          <label class="row">Ativo <input type="checkbox" id="aguaOn" ${L.agua.on?'checked':''}></label>
-          <label>Intervalo (min) <input id="aguaInt" type="number" class="input" value="${L.agua.interval}" min="15" step="5"></label>
-          <label>Janela: <input id="aguaIni" type="time" class="input" value="${L.agua.win[0]}"> a <input id="aguaFim" type="time" class="input" value="${L.agua.win[1]}"></label>
-        </div>
-        <div class="card"><div class="title">Pausa (levantar)</div>
-          <label class="row">Ativo <input type="checkbox" id="pausaOn" ${L.pausa.on?'checked':''}></label>
-          <label>Intervalo (min) <input id="pausaInt" type="number" class="input" value="${L.pausa.interval}" min="20" step="5"></label>
-        </div>
-      </div>
-      <div class="card"><div class="title">Treino</div>
-        <label class="row">Ativo <input type="checkbox" id="treinoOn" ${L.treino.on?'checked':''}></label>
-        <label>Hora <input id="treinoHora" type="time" class="input" value="${L.treino.time}"></label>
-        <div class="small">Dias: seg, qua, sex</div>
-      </div>
-      <div class="row"><button class="btn good" id="start">Salvar e iniciar</button><button class="btn ghost" id="stop">Parar</button></div>
-      <p class="small">Obs.: alertas funcionam com o app aberto. Para alertas com a tela bloqueada, publique como PWA + Push.</p>
-    `);
-    el.appendChild(box);
-    document.querySelector('#perm').onclick=async()=>{ const p = await Notification.requestPermission(); state.lembretes.perm=(p==='granted'); save(); render('lembretes'); };
-    document.querySelector('#start').onclick=()=>{ L.agua.on=document.querySelector('#aguaOn').checked; L.agua.interval=+document.querySelector('#aguaInt').value||60; L.agua.win=[document.querySelector('#aguaIni').value,document.querySelector('#aguaFim').value]; L.pausa.on=document.querySelector('#pausaOn').checked; L.pausa.interval=+document.querySelector('#pausaInt').value||60; L.treino.on=document.querySelector('#treinoOn').checked; L.treino.time=document.querySelector('#treinoHora').value; save(); startReminders(); alert('Lembretes iniciados'); };
-    document.querySelector('#stop').onclick=()=>{ stopReminders(); alert('Lembretes parados'); };
-  }
-  let timers={agua:null,pausa:null,treino:null};
-  function stopReminders(){ Object.values(timers).forEach(t=>{ if(t) clearInterval(t); }); timers={agua:null,pausa:null,treino:null}; }
-  function startReminders(){ stopReminders(); const L=state.lembretes; if(L.agua.on){ timers.agua=setInterval(()=>{ const now=new Date(); if(inWin(now,L.agua.win)){ notify('Hora de beber água','Adicione +1 copo no app.'); } }, Math.max(1,L.agua.interval)*60*1000); } if(L.pausa.on){ timers.pausa=setInterval(()=> notify('Hora de levantar','Caminhe 2 minutos e alongue.'), Math.max(1,L.pausa.interval)*60*1000); } if(L.treino.on){ timers.treino=setInterval(()=>{ const now=new Date(); const [h,m]=state.lembretes.treino.time.split(':').map(Number); if([1,3,5].includes(now.getDay()) && now.getHours()==h && now.getMinutes()==m){ notify('Treino agora','Bora! Vá no seu ritmo.'); } }, 60*1000); } }
-  function inWin(now, win){ const t=now.getHours()*60+now.getMinutes(); const [iH,iM]=win[0].split(':'), [fH,fM]=win[1].split(':'); const a=+iH*60+ +iM, b=+fH*60+ +fM; return a<=t && t<=b; }
-  function notify(title, body){ try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body}); else alert(title + '\n' + body); }catch(e){ alert(title + '\n' + body); } }
-
-  // helpers
-  function card(title, inner){ const d=document.createElement('section'); d.className='card'; d.innerHTML='<div class="spaced"><div class="title">'+title+'</div></div>'+inner; return d; }
-
-  // PWA
-  async function initSW(){ if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('sw.js'); }catch(e){ console.log('SW', e); } } }
-})();
-</script>
-</body>
-</html>
+    }).j
