@@ -15,7 +15,8 @@ const biblioteca = [
   { nome: "Remada baixa", descricao: "Peito aberto, puxe pelo cotovelo" },
   { nome: "Prancha", descricao: "Cabeça, tronco e quadril alinhados" },
   { nome: "Eliptico", descricao: "Movimento contínuo e postura ereta" },
-  { nome: "Alongamento", descricao: "Alongar membros e lombar" }
+  { nome: "Alongamento", descricao: "Alongar membros e lombar" },
+  { nome: "Bicicleta", descricao: "Pedalar leve 10 min" }
 ].map(ex => ({...ex, video: videoLink(ex.nome)}));
 
 // === Treinos semanais ===
