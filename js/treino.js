@@ -1,3 +1,4 @@
+// treino.js
 // Função utilitária para gerar link de vídeo automaticamente
 function videoLink(nome) {
   return "media/" + nome
@@ -9,7 +10,6 @@ function videoLink(nome) {
 // === Biblioteca global de exercícios ===
 const biblioteca = [
   { nome: "Aquecimento", descricao: "Bicicleta ou esteira leve 10 min" },
-  { nome: "Bicicleta", descricao: "Pedalar leve, ritmo constante" },   // <-- adicionado
   { nome: "Leg press", descricao: "Joelho alinhado ao pé" },
   { nome: "Cadeira extensora", descricao: "Controle no movimento" },
   { nome: "Mesa flexora", descricao: "Não levante o quadril" },
@@ -24,7 +24,7 @@ const treinos = {
   segunda:  ["Aquecimento","Eliptico","Leg press","Mesa flexora","Alongamento"],
   terca:    ["Aquecimento","Cadeira extensora","Remada baixa","Prancha","Alongamento"],
   quarta:   ["Aquecimento","Eliptico","Leg press","Prancha","Alongamento"],
-  quinta:   ["Aquecimento","Bicicleta","Mesa flexora","Remada baixa","Alongamento"], // agora válido
+  quinta:   ["Aquecimento","Bicicleta","Mesa flexora","Remada baixa","Alongamento"],
   sexta:    ["Aquecimento","Eliptico","Cadeira extensora","Prancha","Alongamento"],
   sabado:   null,
   domingo:  null
@@ -35,36 +35,8 @@ function getExercicio(nome) {
   return biblioteca.find(ex => ex.nome === nome);
 }
 
-// Renderizar treino do dia
-function viewTreinos(el) {
-  const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
-  const hoje = new Date();
-  const dia = nomesDias[hoje.getDay()];
-  const lista = treinos[dia];
-
-  if (!lista) {
-    // Card especial de descanso
-    el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
-      <div class="card" style="text-align:center">
-        <div class="title">Hoje é descanso 😴</div>
-        <p class="small">Aproveite para relaxar e recuperar energia.</p>
-      </div>
-    `));
-    return;
-  }
-
-  el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
-    <div class="list">
-      ${lista.map(nome => {
-        const ex = getExercicio(nome);
-        if (!ex) return `<div class="spaced"><div>⚠️ Exercício não encontrado: ${nome}</div></div>`;
-        return `
-          <div class="spaced">
-            <div>${ex.nome} — <span class="small">${ex.descricao}</span></div>
-            <a href="${ex.video}" target="_blank" class="btn">▶</a>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `));
-}
+// A função viewTreinos agora está definida no app.js
+// Esta linha garante que a biblioteca e treinos sejam globais
+window.biblioteca = biblioteca;
+window.treinos = treinos;
+window.getExercicio = getExercicio;
