@@ -1,6 +1,6 @@
 // app.js
 (function(){
-  const APP_VERSION = "v25.2";
+  const APP_VERSION = "v25.3";
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -11,14 +11,11 @@
     return {
       hoje:{date:ymd(new Date()),aguaMl:0,treino:[],notas:''},
       settings:{aguaMetaMl:2000,copoMl:250},
-      biblioteca:[],
-      treinos:[],
       medidas:[],
       lembretes:{}
     }
   }
 
-  function id(){return Math.random().toString(36).slice(2,9)}
   function ymd(d){return d.toISOString().slice(0,10)}
   function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
   function save(){localStorage.setItem(LS,JSON.stringify(state))}
@@ -39,8 +36,8 @@
   function render(tab){
     const el=document.getElementById('view'); el.innerHTML='';
     if(tab==='hoje') return viewHoje(el);
-    if(tab==='treinos') return window.viewTreinos(el); // corrigido
-    if(tab==='biblioteca') return viewBiblioteca(el);
+    if(tab==='treinos') return window.viewTreinos(el); // treino ainda vamos revisar
+    if(tab==='biblioteca') return viewBiblioteca(el);  // biblioteca restaurada
     if(tab==='medidas') return viewMedidas(el);
     if(tab==='lembretes') return viewLembretes(el);
   }
@@ -64,22 +61,15 @@
   }
 
   function viewBiblioteca(el){
-    const list=(biblioteca||[]).map((ex,i)=>`
+    const list=(window.biblioteca||[]).map((ex,i)=>`
       <div class="card">
         <div class="spaced">
           <div class="title">${ex.nome}</div>
-          <button class="btn" data-video="${ex.video}">▶ Ver</button>
+          <a href="${ex.video}" target="_blank" class="btn">▶ Ver</a>
         </div>
         <div class="small">${ex.descricao||''}</div>
       </div>`).join('');
     el.appendChild(card('Biblioteca de exercícios',list));
-
-    document.querySelectorAll('button[data-video]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const videoUrl=btn.getAttribute('data-video');
-        openVideoModal(videoUrl);
-      });
-    });
   }
 
   function viewMedidas(el){
@@ -97,22 +87,6 @@
     el.appendChild(card('Lembretes',`
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
-
-  function openVideoModal(videoUrl){
-    byId('modalTitle').textContent = "Demonstração do Exercício";
-    byId('modalContent').innerHTML = `
-      <video controls playsinline style="width:100%;max-height:70vh">
-        <source src="${videoUrl}" type="video/mp4">
-      </video>
-    `;
-    byId('modal').classList.add('open');
-  }
-
-  byId('closeModal').onclick=()=>{
-    byId('modal').classList.remove('open');
-    const video = byId('modalContent').querySelector('video');
-    if(video) video.pause();
-  };
 
   function card(title,inner){
     const d=document.createElement('section');
