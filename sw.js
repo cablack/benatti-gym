@@ -8,10 +8,19 @@ self.addEventListener('install', (e) => {
       './index.html',
       './css/style.css',
       './js/app.js',
-      './js/treino.js'
+      './js/treino.js',
+      './media/aquecimento.mp4',
+      './media/leg-press.mp4',
+      './media/cadeira-extensora.mp4',
+      './media/mesa-flexora.mp4',
+      './media/remada-baixa.mp4',
+      './media/prancha.mp4',
+      './media/eliptico.mp4',
+      './media/alongamento.mp4'
     ]))
   );
 });
+
 self.addEventListener('activate', (e) => self.clients.claim());
 
 self.addEventListener('fetch', (e) => {
