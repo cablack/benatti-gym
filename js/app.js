@@ -1,5 +1,6 @@
 // app.js
 (function(){
+  const APP_VERSION = "v25.2";
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -23,7 +24,9 @@
   function save(){localStorage.setItem(LS,JSON.stringify(state))}
   function ensureToday(){
     const t=new Date();
-    document.getElementById('today').textContent=t.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    document.getElementById('today').textContent=
+      t.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}) +
+      " • " + APP_VERSION;
     if(!state.hoje||state.hoje.date!==ymd(t)) state.hoje={date:ymd(t),aguaMl:0,treino:[],notas:''};
     save();
   }
@@ -36,7 +39,7 @@
   function render(tab){
     const el=document.getElementById('view'); el.innerHTML='';
     if(tab==='hoje') return viewHoje(el);
-    if(tab==='treinos') return viewTreinos(el); // Esta função está em treino.js
+    if(tab==='treinos') return window.viewTreinos(el); // corrigido
     if(tab==='biblioteca') return viewBiblioteca(el);
     if(tab==='medidas') return viewMedidas(el);
     if(tab==='lembretes') return viewLembretes(el);
@@ -61,7 +64,6 @@
   }
 
   function viewBiblioteca(el){
-    // Esta função precisa ser atualizada para usar a biblioteca global
     const list=(biblioteca||[]).map((ex,i)=>`
       <div class="card">
         <div class="spaced">
@@ -71,11 +73,10 @@
         <div class="small">${ex.descricao||''}</div>
       </div>`).join('');
     el.appendChild(card('Biblioteca de exercícios',list));
-    
-    // Adicionar event listeners para os botões de vídeo
-    document.querySelectorAll('button[data-video]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const videoUrl = btn.getAttribute('data-video');
+
+    document.querySelectorAll('button[data-video]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const videoUrl=btn.getAttribute('data-video');
         openVideoModal(videoUrl);
       });
     });
@@ -97,72 +98,20 @@
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
 
-  function openVideoModal(videoUrl) {
+  function openVideoModal(videoUrl){
     byId('modalTitle').textContent = "Demonstração do Exercício";
-    
-    // Mostra spinner inicial
     byId('modalContent').innerHTML = `
-      <div class="loading"></div>
-      <p class="small" style="text-align: center; margin-top: 10px;">Carregando vídeo...</p>
+      <video controls playsinline style="width:100%;max-height:70vh">
+        <source src="${videoUrl}" type="video/mp4">
+      </video>
     `;
-    
     byId('modal').classList.add('open');
-    
-    // Cria elemento de vídeo
-    const video = document.createElement('video');
-    video.controls = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.style.width = '100%';
-    video.style.maxHeight = '70vh';
-    
-    const source = document.createElement('source');
-    source.src = videoUrl;
-    source.type = 'video/mp4';
-    video.appendChild(source);
-    
-    // Quando o vídeo puder começar a tocar
-    video.addEventListener('canplay', function() {
-      byId('modalContent').innerHTML = '';
-      byId('modalContent').appendChild(video);
-      
-      // tenta autoplay
-      video.play().catch(() => {
-        console.log('Autoplay bloqueado, mostrando controles');
-      });
-    });
-    
-    // Timeout de fallback (5s)
-    const timeoutId = setTimeout(() => {
-      if (byId('modalContent').querySelector('.loading')) {
-        byId('modalContent').innerHTML = '';
-        byId('modalContent').appendChild(video);
-      }
-    }, 5000);
-    
-    // Tratamento de erro
-    video.addEventListener('error', function() {
-      clearTimeout(timeoutId);
-      byId('modalContent').innerHTML = `
-        <div class="error-msg">
-          <p>Erro ao carregar o vídeo.</p>
-          <p>Verifique sua conexão ou tente novamente.</p>
-          <button class="retry-btn" onclick="window.open('${videoUrl}', '_blank')">Abrir em nova janela</button>
-        </div>
-      `;
-    });
-    
-    // dispara carregamento
-    video.load();
   }
-  
-  byId('closeModal').onclick = function() {
+
+  byId('closeModal').onclick=()=>{
     byId('modal').classList.remove('open');
-    // Parar qualquer vídeo que esteja tocando
     const video = byId('modalContent').querySelector('video');
-    if (video) {
-      video.pause();
-    }
+    if(video) video.pause();
   };
 
   function card(title,inner){
@@ -178,45 +127,4 @@
       try{await navigator.serviceWorker.register('sw.js')}catch(e){}
     }
   }
-
-  // Função global para ser acessada por treino.js
-  window.viewTreinos = function(el) {
-    const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
-    const hoje = new Date();
-    const dia = nomesDias[hoje.getDay()];
-    const lista = treinos[dia];
-
-    if (!lista) {
-      // Card especial de descanso
-      el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
-        <div style="text-align:center; padding: 20px;">
-          <div class="title">Hoje é descanso 😴</div>
-          <p class="small">Aproveite para relaxar e recuperar energia.</p>
-        </div>
-      `));
-      return;
-    }
-
-    el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
-      <div class="list">
-        ${lista.map(nome => {
-          const ex = getExercicio(nome);
-          return `
-            <div class="spaced" style="margin: 8px 0; padding: 8px; border-bottom: 1px solid var(--line);">
-              <div>${ex.nome} — <span class="small">${ex.descricao}</span></div>
-              <button class="btn" data-video="${ex.video}">▶</button>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `));
-    
-    // Adicionar event listeners para os botões de vídeo
-    document.querySelectorAll('button[data-video]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const videoUrl = btn.getAttribute('data-video');
-        openVideoModal(videoUrl);
-      });
-    });
-  };
 })();

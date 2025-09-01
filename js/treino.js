@@ -1,43 +1,36 @@
-// treino.js
-// Função utilitária para gerar link de vídeo automaticamente
-function videoLink(nome) {
-  return "media/" + nome
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // remove acentos
-    .replace(/\s+/g,"-") + ".mp4";
-}
+const CACHE = 'benatti-gym-v25-2';
 
-// === Biblioteca global de exercícios ===
-const biblioteca = [
-  { nome: "Aquecimento", descricao: "Bicicleta ou esteira leve 10 min" },
-  { nome: "Bicicleta", descricao: "Pedalar leve, ritmo constante" },
-  { nome: "Leg press", descricao: "Joelho alinhado ao pé" },
-  { nome: "Cadeira extensora", descricao: "Controle no movimento" },
-  { nome: "Mesa flexora", descricao: "Não levante o quadril" },
-  { nome: "Remada baixa", descricao: "Peito aberto, puxe pelo cotovelo" },
-  { nome: "Prancha", descricao: "Cabeça, tronco e quadril alinhados" },
-  { nome: "Eliptico", descricao: "Movimento contínuo e postura ereta" },
-  { nome: "Alongamento", descricao: "Alongar membros e lombar" }
-].map(ex => ({...ex, video: videoLink(ex.nome)}));
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll([
+      './',
+      './index.html',
+      './css/style.css',
+      './js/app.js',
+      './js/treino.js',
+      './media/aquecimento.mp4',
+      './media/leg-press.mp4',
+      './media/cadeira-extensora.mp4',
+      './media/mesa-flexora.mp4',
+      './media/remada-baixa.mp4',
+      './media/prancha.mp4',
+      './media/eliptico.mp4',
+      './media/alongamento.mp4'
+    ]))
+  );
+});
 
-// === Treinos semanais ===
-const treinos = {
-  segunda:  ["Aquecimento","Eliptico","Leg press","Mesa flexora","Alongamento"],
-  terca:    ["Aquecimento","Cadeira extensora","Remada baixa","Prancha","Alongamento"],
-  quarta:   ["Aquecimento","Eliptico","Leg press","Prancha","Alongamento"],
-  quinta:   ["Aquecimento","Bicicleta","Mesa flexora","Remada baixa","Alongamento"],
-  sexta:    ["Aquecimento","Eliptico","Cadeira extensora","Prancha","Alongamento"],
-  sabado:   null,
-  domingo:  null
-};
+self.addEventListener('activate', (e) => self.clients.claim());
 
-// Retorna exercício completo a partir do nome
-function getExercicio(nome) {
-  return biblioteca.find(ex => ex.nome === nome);
-}
-
-// A função viewTreinos agora está definida no app.js
-// Esta linha garante que a biblioteca e treinos sejam globais
-window.biblioteca = biblioteca;
-window.treinos = treinos;
-window.getExercicio = getExercicio;
+self.addEventListener('fetch', (e) => {
+  e.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(e.request);
+    if (cached) return cached;
+    const res = await fetch(e.request);
+    const dst = e.request.destination;
+    if (['image','video','script','style'].includes(dst)) cache.put(e.request, res.clone());
+    return res;
+  })());
+});
