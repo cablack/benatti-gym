@@ -1,6 +1,6 @@
 // app.js
 (function(){
-  const APP_VERSION = "v25.3";
+  const APP_VERSION = "v25.4";
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -36,8 +36,8 @@
   function render(tab){
     const el=document.getElementById('view'); el.innerHTML='';
     if(tab==='hoje') return viewHoje(el);
-    if(tab==='treinos') return window.viewTreinos(el); // treino ainda vamos revisar
-    if(tab==='biblioteca') return viewBiblioteca(el);  // biblioteca restaurada
+    if(tab==='treinos') return window.viewTreinos(el);
+    if(tab==='biblioteca') return viewBiblioteca(el);
     if(tab==='medidas') return viewMedidas(el);
     if(tab==='lembretes') return viewLembretes(el);
   }
@@ -87,6 +87,39 @@
     el.appendChild(card('Lembretes',`
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
+
+  // === NOVO: Treinos do dia ===
+  window.viewTreinos = function(el){
+    const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
+    const hoje = new Date();
+    const dia = nomesDias[hoje.getDay()];
+    const lista = window.treinos[dia];
+
+    if (!lista) {
+      el.appendChild(card(`Treino de ${dia}`, `
+        <div style="text-align:center; padding: 20px;">
+          <div class="title">Hoje não há treino</div>
+          <p class="small">Aproveite para descansar.</p>
+        </div>
+      `));
+      return;
+    }
+
+    el.appendChild(card(`Treino de ${dia}`, `
+      <div class="list">
+        ${lista.map(nome=>{
+          const ex = window.getExercicio(nome);
+          if(!ex) return "";
+          return `
+            <div class="spaced" style="margin:8px 0; padding:6px 0; border-bottom:1px solid var(--line);">
+              <div>${ex.nome} — <span class="small">${ex.descricao}</span></div>
+              <a href="${ex.video}" target="_blank" class="btn">▶</a>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `));
+  };
 
   function card(title,inner){
     const d=document.createElement('section');
