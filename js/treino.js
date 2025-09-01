@@ -10,6 +10,7 @@ function videoLink(nome) {
 // === Biblioteca global de exercícios ===
 const biblioteca = [
   { nome: "Aquecimento", descricao: "Bicicleta ou esteira leve 10 min" },
+  { nome: "Bicicleta", descricao: "Pedalar leve, ritmo constante" },
   { nome: "Leg press", descricao: "Joelho alinhado ao pé" },
   { nome: "Cadeira extensora", descricao: "Controle no movimento" },
   { nome: "Mesa flexora", descricao: "Não levante o quadril" },
