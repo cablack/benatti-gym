@@ -1,0 +1,21 @@
+:root { --bg:#0b1220; --card:#111a2b; --ink:#e7eef7; --mut:#9fb2c8; --line:#223249; }
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;background:#0b1220;color:var(--ink)}
+header{position:sticky;top:0;z-index:5;background:#0e1424;border-bottom:1px solid #132036;padding:14px 16px}
+.container{max-width:860px;margin:0 auto;padding:16px}
+.h1{font-weight:800}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spaced{display:flex;justify-content:space-between;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:#12233a;color:#fff;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn.primary{background:linear-gradient(180deg,#1a90d1,#1578ad);border-color:#16638b}
+.btn.good{background:#0f2a18;border-color:#1e4d2f}
+.progress{height:10px;background:#162236;border-radius:999px;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
+.tabbar{position:sticky;bottom:0;background:#0e1424;border-top:1px solid #1a2638;display:flex;gap:6px;padding:10px;z-index:5}
+.tab{flex:1;background:#102036;border:1px solid var(--line);color:#cfe0f7;padding:10px;border-radius:12px;font-size:13px;cursor:pointer}
+.tab.active{background:#153250;border-color:#2f547a;color:#fff}
+.list{display:flex;flex-direction:column;gap:8px}
+.small{font-size:12px;color:var(--mut)}
+.title{font-weight:800}
+.input{background:#0c1526;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px}

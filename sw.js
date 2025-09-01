@@ -1,11 +1,14 @@
-const CACHE = 'benatti-gym-v21';
+const CACHE = 'benatti-gym-v24';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll([
       './',
-      './index.html'
+      './index.html',
+      './css/style.css',
+      './js/app.js',
+      './js/treino.js'
     ]))
   );
 });
@@ -18,7 +21,7 @@ self.addEventListener('fetch', (e) => {
     if (cached) return cached;
     const res = await fetch(e.request);
     const dst = e.request.destination;
-    if (dst === 'image' || dst === 'video') cache.put(e.request, res.clone());
+    if (['image','video','script','style'].includes(dst)) cache.put(e.request, res.clone());
     return res;
   })());
 });
