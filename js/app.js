@@ -1,6 +1,6 @@
 // app.js
 (function(){
-  const APP_VERSION = "v25.4";
+  const APP_VERSION = "v25.5";
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -88,7 +88,7 @@
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
 
-  // === NOVO: Treinos do dia ===
+  // === Atualizado: Treinos com séries/reps/tempo ===
   window.viewTreinos = function(el){
     const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
     const hoje = new Date();
@@ -107,12 +107,15 @@
 
     el.appendChild(card(`Treino de ${dia}`, `
       <div class="list">
-        ${lista.map(nome=>{
-          const ex = window.getExercicio(nome);
+        ${lista.map(item=>{
+          const ex = window.getExercicio(item.nome);
           if(!ex) return "";
+          let detalhe = "";
+          if(item.series && item.reps) detalhe = `${item.series}×${item.reps}`;
+          else if(item.tempo) detalhe = item.tempo;
           return `
             <div class="spaced" style="margin:8px 0; padding:6px 0; border-bottom:1px solid var(--line);">
-              <div>${ex.nome} — <span class="small">${ex.descricao}</span></div>
+              <div>${ex.nome} — <span class="small">${ex.descricao}</span> <span class="small">(${detalhe})</span></div>
               <a href="${ex.video}" target="_blank" class="btn">▶</a>
             </div>
           `;

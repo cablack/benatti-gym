@@ -19,13 +19,39 @@ const biblioteca = [
 ].map(ex => ({...ex, video: videoLink(ex.nome)}));
 
 const treinos = {
-  segunda:  ["Alongamento","Bicicleta","Leg press","Mesa flexora"],
-  terca:    ["Alongamento","Esteira","Cadeira extensora","Remada baixa","Prancha"],
-  quarta:   ["Alongamento","Bicicleta","Leg press","Prancha"],
-  quinta:   ["Alongamento","Esteira","Mesa flexora","Remada baixa"],
-  sexta:    ["Alongamento","Bicicleta","Cadeira extensora","Prancha"],
-  sabado:   null,
-  domingo:  null
+  segunda: [
+    { nome:"Alongamento", tempo:"5 min" },
+    { nome:"Bicicleta", tempo:"10 min" },
+    { nome:"Leg press", series:2, reps:"12-15" },
+    { nome:"Mesa flexora", series:2, reps:"12-15" }
+  ],
+  terca: [
+    { nome:"Alongamento", tempo:"5 min" },
+    { nome:"Esteira", tempo:"10 min" },
+    { nome:"Cadeira extensora", series:2, reps:"12-15" },
+    { nome:"Remada baixa", series:2, reps:"12-15" },
+    { nome:"Prancha", tempo:"30s" }
+  ],
+  quarta: [
+    { nome:"Alongamento", tempo:"5 min" },
+    { nome:"Bicicleta", tempo:"10 min" },
+    { nome:"Leg press", series:2, reps:"12-15" },
+    { nome:"Prancha", tempo:"30s" }
+  ],
+  quinta: [
+    { nome:"Alongamento", tempo:"5 min" },
+    { nome:"Esteira", tempo:"10 min" },
+    { nome:"Mesa flexora", series:2, reps:"12-15" },
+    { nome:"Remada baixa", series:2, reps:"12-15" }
+  ],
+  sexta: [
+    { nome:"Alongamento", tempo:"5 min" },
+    { nome:"Bicicleta", tempo:"10 min" },
+    { nome:"Cadeira extensora", series:2, reps:"12-15" },
+    { nome:"Prancha", tempo:"30s" }
+  ],
+  sabado: null,
+  domingo: null
 };
 
 function getExercicio(nome) {
