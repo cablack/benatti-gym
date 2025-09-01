@@ -15,8 +15,7 @@ const biblioteca = [
   { nome: "Remada baixa", descricao: "Peito aberto, puxe pelo cotovelo" },
   { nome: "Prancha", descricao: "Cabeça, tronco e quadril alinhados" },
   { nome: "Eliptico", descricao: "Movimento contínuo e postura ereta" },
-  { nome: "Alongamento", descricao: "Alongar membros e lombar" },
-  { nome: "Descanso", descricao: "Vai dormir 😴" }
+  { nome: "Alongamento", descricao: "Alongar membros e lombar" }
 ].map(ex => ({...ex, video: videoLink(ex.nome)}));
 
 // === Treinos semanais ===
@@ -26,8 +25,8 @@ const treinos = {
   quarta:   ["Aquecimento","Eliptico","Leg press","Prancha","Alongamento"],
   quinta:   ["Aquecimento","Bicicleta","Mesa flexora","Remada baixa","Alongamento"],
   sexta:    ["Aquecimento","Eliptico","Cadeira extensora","Prancha","Alongamento"],
-  sabado:   ["Descanso"],
-  domingo:  ["Descanso"]
+  sabado:   null,
+  domingo:  null
 };
 
 // Retorna exercício completo a partir do nome
@@ -40,7 +39,18 @@ function viewTreinos(el) {
   const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
   const hoje = new Date();
   const dia = nomesDias[hoje.getDay()];
-  const lista = treinos[dia] || [];
+  const lista = treinos[dia];
+
+  if (!lista) {
+    // Card especial de descanso
+    el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
+      <div class="card" style="text-align:center">
+        <div class="title">Hoje é descanso 😴</div>
+        <p class="small">Aproveite para relaxar e recuperar energia.</p>
+      </div>
+    `));
+    return;
+  }
 
   el.appendChild(card(`Treino de ${dia.charAt(0).toUpperCase()+dia.slice(1)}`, `
     <div class="list">
