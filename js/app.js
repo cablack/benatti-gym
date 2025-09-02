@@ -1,6 +1,6 @@
 // app.js
 (function(){
-  const APP_VERSION = "v25.5";
+  const APP_VERSION = "v25.6";
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -72,14 +72,52 @@
     el.appendChild(card('Biblioteca de exercícios',list));
   }
 
+  // === Atualizado: Medidas com envio ao Google Forms ===
   function viewMedidas(el){
     el.appendChild(card('Registrar medidas',`
-      <div class="row"><label>Peso (kg)<input id="m_peso" type="number" class="input"></label>
-      <label>Cintura (cm)<input id="m_cint" type="number" class="input"></label>
-      <button class="btn good" id="salvarMed">Salvar</button></div>`));
+      <div class="list">
+        <label>Altura (cm)<input id="m_altura" type="number" class="input"></label>
+        <label>Peso (kg)<input id="m_peso" type="number" class="input"></label>
+        <label>Cintura (cm)<input id="m_cint" type="number" class="input"></label>
+        <label>Peito (cm)<input id="m_peito" type="number" class="input"></label>
+        <label>Braço (cm)<input id="m_braco" type="number" class="input"></label>
+        <label>Panturrilha (cm)<input id="m_pant" type="number" class="input"></label>
+        <label>Tempo Esteira (min)<input id="m_esteira" type="text" class="input"></label>
+        <label>Tempo Bicicleta (min)<input id="m_bike" type="text" class="input"></label>
+        <button class="btn good" id="salvarMed">Salvar</button>
+      </div>`));
+
     byId('salvarMed').onclick=()=>{
-      state.medidas.push({data:ymd(new Date()),peso:+byId('m_peso').value||null,cintura:+byId('m_cint').value||null});
-      save();alert('Medida salva!');
+      const dados = {
+        altura: byId('m_altura').value,
+        peso: byId('m_peso').value,
+        cintura: byId('m_cint').value,
+        peito: byId('m_peito').value,
+        braco: byId('m_braco').value,
+        pant: byId('m_pant').value,
+        esteira: byId('m_esteira').value,
+        bike: byId('m_bike').value
+      };
+
+      // Salva localmente
+      state.medidas.push({data:ymd(new Date()),...dados});
+      save();
+
+      // Envia ao Google Forms
+      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse";
+      const formData = new FormData();
+      formData.append("entry.198550740", dados.altura);
+      formData.append("entry.877850622", dados.peso);
+      formData.append("entry.203779381", dados.cintura);
+      formData.append("entry.8560140", dados.peito);
+      formData.append("entry.1959138967", dados.braco);
+      formData.append("entry.247764967", dados.pant);
+      formData.append("entry.1375736721", dados.esteira);
+      formData.append("entry.1782579123", dados.bike);
+
+      fetch(formUrl, { method: "POST", mode: "no-cors", body: formData });
+
+      alert('Medida salva localmente e enviada!');
     };
   }
 
@@ -88,7 +126,6 @@
       <p class="small">Configurações futuras de notificações aqui.</p>`));
   }
 
-  // === Atualizado: Treinos com séries/reps/tempo ===
   window.viewTreinos = function(el){
     const nomesDias = ["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
     const hoje = new Date();
