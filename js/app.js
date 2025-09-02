@@ -76,48 +76,52 @@
   function viewMedidas(el){
     el.appendChild(card('Registrar medidas',`
       <div class="list">
-        <label>Altura (cm)<input id="m_altura" type="number" class="input"></label>
-        <label>Peso (kg)<input id="m_peso" type="number" class="input"></label>
-        <label>Cintura (cm)<input id="m_cint" type="number" class="input"></label>
-        <label>Peito (cm)<input id="m_peito" type="number" class="input"></label>
-        <label>Braço (cm)<input id="m_braco" type="number" class="input"></label>
-        <label>Panturrilha (cm)<input id="m_pant" type="number" class="input"></label>
-        <label>Tempo Esteira (min)<input id="m_esteira" type="text" class="input"></label>
-        <label>Tempo Bicicleta (min)<input id="m_bike" type="text" class="input"></label>
-        <button class="btn good" id="salvarMed">Salvar</button>
+        <label>Altura (cm)<input id="m_altura" type="number" class="input" required></label>
+        <label>Peso (kg)<input id="m_peso" type="number" class="input" required></label>
+        <label>Cintura (cm)<input id="m_cint" type="number" class="input" required></label>
+        <label>Peito (cm)<input id="m_peito" type="number" class="input" required></label>
+        <label>Braço (cm)<input id="m_braco" type="number" class="input" required></label>
+        <label>Panturrilha (cm)<input id="m_pant" type="number" class="input" required></label>
+        <label>Tempo Esteira (min)<input id="m_esteira" type="text" class="input" required></label>
+        <label>Tempo Bicicleta (min)<input id="m_bike" type="text" class="input" required></label>
+        <button class="btn good" id="salvarMed">Enviar</button>
       </div>`));
 
     byId('salvarMed').onclick=()=>{
+      // pega os valores
       const dados = {
-        altura: byId('m_altura').value,
-        peso: byId('m_peso').value,
-        cintura: byId('m_cint').value,
-        peito: byId('m_peito').value,
-        braco: byId('m_braco').value,
-        pant: byId('m_pant').value,
-        esteira: byId('m_esteira').value,
-        bike: byId('m_bike').value
+        altura: byId('m_altura').value.trim(),
+        peso: byId('m_peso').value.trim(),
+        cintura: byId('m_cint').value.trim(),
+        peito: byId('m_peito').value.trim(),
+        braco: byId('m_braco').value.trim(),
+        pant: byId('m_pant').value.trim(),
+        esteira: byId('m_esteira').value.trim(),
+        bike: byId('m_bike').value.trim()
       };
 
-      // Salva localmente
-      state.medidas.push({data:ymd(new Date()),...dados});
-      save();
+      // validação: se faltar algum, alerta e não envia
+      if (Object.values(dados).some(v => !v)) {
+        alert("⚠️ Preencha todos os campos antes de enviar.");
+        return;
+      }
 
-      // Envia ao Google Forms
-      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse";
-      const formData = new FormData();
-      formData.append("entry.198550740", dados.altura);
-      formData.append("entry.877850622", dados.peso);
-      formData.append("entry.203779381", dados.cintura);
-      formData.append("entry.8560140", dados.peito);
-      formData.append("entry.1959138967", dados.braco);
-      formData.append("entry.247764967", dados.pant);
-      formData.append("entry.1375736721", dados.esteira);
-      formData.append("entry.1782579123", dados.bike);
+      // monta a URL (linha única)
+      const url =
+        "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse" +
+        "?entry.198550740=" + encodeURIComponent(dados.altura) +
+        "&entry.877850622=" + encodeURIComponent(dados.peso) +
+        "&entry.203779381=" + encodeURIComponent(dados.cintura) +
+        "&entry.8560140=" + encodeURIComponent(dados.peito) +
+        "&entry.1959138967=" + encodeURIComponent(dados.braco) +
+        "&entry.247764967=" + encodeURIComponent(dados.pant) +
+        "&entry.1375736721=" + encodeURIComponent(dados.esteira) +
+        "&entry.1782579123=" + encodeURIComponent(dados.bike);
 
-      fetch(formUrl, { method: "POST", mode: "no-cors", body: formData });
-
-      alert('Medida salva localmente e enviada!');
+      // envia silenciosamente
+      fetch(url, { method: "GET", mode: "no-cors" })
+        .then(() => alert("✅ Medidas enviadas com sucesso!"))
+        .catch(() => alert("❌ Erro ao enviar, tente novamente."));
     };
   }
 
