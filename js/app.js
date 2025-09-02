@@ -1,6 +1,10 @@
 // app.js
 (function(){
+
   const APP_VERSION = "v2.6.1";
+
+  const APP_VERSION = "v2.6.0";
+
   const LS='benatti.gym.v1';
   const state = load() || seed();
   ensureToday();
@@ -103,6 +107,7 @@
         return;
       }
 
+
       // Preenche os inputs ocultos do form
       byId('f_altura').value   = dados.altura;
       byId('f_peso').value     = dados.peso;
@@ -116,6 +121,22 @@
       // Envia o formulário oculto
       byId('gform').submit();
       alert("✅ Medidas enviadas com sucesso!");
+
+      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse?";
+      const formData = new URLSearchParams();
+      formData.append("entry.198550740", dados.altura);
+      formData.append("entry.877850622", dados.peso);
+      formData.append("entry.203779381", dados.cintura);
+      formData.append("entry.8560140", dados.peito);
+      formData.append("entry.1959138967", dados.braco);
+      formData.append("entry.247764967", dados.pant);
+      formData.append("entry.1375736721", dados.esteira);
+      formData.append("entry.1782579123", dados.bike);
+
+      fetch(formUrl, { method: "POST", body: formData, mode: "no-cors" })
+        .then(() => alert("✅ Medidas enviadas com sucesso!"))
+        .catch(() => alert("❌ Erro ao enviar, tente novamente."));
+
     };
   }
 
