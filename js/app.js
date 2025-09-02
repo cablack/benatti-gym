@@ -104,7 +104,7 @@
       save();
 
       // Envia ao Google Forms
-      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse";
+      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse?";
       const formData = new FormData();
       formData.append("entry.198550740", dados.altura);
       formData.append("entry.877850622", dados.peso);
