@@ -100,6 +100,25 @@
         bike: byId('m_bike').value.trim()
       };
 
+      // Salva localmente
+      state.medidas.push({data:ymd(new Date()),...dados});
+      save();
+
+      // Envia ao Google Forms
+      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfZSiubpmKwH4Cl1vtynb5FT18rUo0b9Ke27RNThrsIoKTdEQ/formResponse?";
+      const formData = new FormData();
+      formData.append("entry.198550740", dados.altura);
+      formData.append("entry.877850622", dados.peso);
+      formData.append("entry.203779381", dados.cintura);
+      formData.append("entry.8560140", dados.peito);
+      formData.append("entry.1959138967", dados.braco);
+      formData.append("entry.247764967", dados.pant);
+      formData.append("entry.1375736721", dados.esteira);
+      formData.append("entry.1782579123", dados.bike);
+
+      fetch(formUrl, { method: "POST", mode: "no-cors", body: formData });
+
+      alert('Medida salva localmente e enviada!');
       // validação: se faltar algum, alerta e não envia
       if (Object.values(dados).some(v => !v)) {
         alert("⚠️ Preencha todos os campos antes de enviar.");
